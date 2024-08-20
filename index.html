@@ -1,0 +1,120 @@
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Mariage de Coco & PA</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAsgv9I6yNW-vRP97ye9Jk3sEndVbBla4I"></script>
+</head>
+<body>
+    <header>
+        <h1>Le Mariage de Coco & PA</h1>
+        <nav>
+            <ul>
+                <li><a href="#accueil"><span class="icon">🏠</span> Accueil</a></li>
+                <li><a href="#informations"><span class="icon">ℹ️</span> Informations</a></li>
+                <li><a href="#galerie"><span class="icon">🖼️</span> Galerie</a></li>
+                <li><a href="#importer"><span class="icon">📤</span> Importer Photos</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- 1. Accueil -->
+        <section id="accueil">
+            <h2>Save the Date</h2>
+            <p>Nous avons le plaisir de vous inviter à notre mariage le [Date] !</p>
+            <p>Lieu : 10 Route des 1000 Fleurs, 17580 Le Bois Plage en Ré</p>
+            <p>Heure : [Heure de l'événement]</p>
+        </section>
+
+        <!-- 2. Informations détaillées -->
+        <section id="informations">
+            <h2>Informations Détaillées</h2>
+            <h3>Lieu de Réception</h3>
+            <p>Le mariage aura lieu au 10 Route des 1000 Fleurs, 17580 Le Bois Plage en Ré.</p>
+            
+            <h3>Hébergements à Proximité</h3>
+            <ul>
+                <li>Hôtel Le Bois-Plage - Adresse: 1 Rue de l'Hôtel, 17580 Le Bois-Plage en Ré</li>
+                <li>Chambres d'hôtes Les Fleurs - Adresse: 5 Rue des Roses, 17580 Le Bois-Plage en Ré</li>
+                <li>Airbnb La Maison - Adresse: 20 Rue du Jardin, 17580 Le Bois-Plage en Ré</li>
+            </ul>
+            <h3>Carte du Lieu et Hébergements</h3>
+            <div id="map" style="width: 100%; height: 450px;"></div>
+            
+            <h3>Coordonnées des Taxis</h3>
+            <ul>
+                <li>Taxi Ré - Téléphone: [Téléphone]</li>
+                <li>Taxi Océan - Téléphone: [Téléphone]</li>
+            </ul>
+        </section>
+
+        <!-- 3. Galerie Photo -->
+        <section id="galerie">
+            <h2>Galerie Photo</h2>
+            <div id="photos"></div>
+        </section>
+
+        <!-- 4. Importer des Photos -->
+        <section id="importer">
+            <h2>Importer vos Photos</h2>
+            <p>Scannez le QR code ci-dessous pour déposer vos photos, ou cliquez sur le bouton pour télécharger vos photos directement.</p>
+            <img src="qrcode.png" alt="QR Code pour déposer des photos">
+            <form action="upload.php" method="post" enctype="multipart/form-data">
+                <label for="fileToUpload">Sélectionnez une photo :</label>
+                <input type="file" name="fileToUpload" id="fileToUpload">
+                <input type="submit" value="Importer" name="submit">
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Coco & PA. Tous droits réservés.</p>
+    </footer>
+
+    <script>
+        function initMap() {
+            var lieuReception = {lat: 46.187843322753906, lng: -1.3755418062210083};
+            var hotel1 = {lat: 46.160500, lng: -1.415000};
+            var hotel2 = {lat: 46.161000, lng: -1.417000};
+            var airbnb = {lat: 46.162000, lng: -1.418000};
+
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 14,
+                center: lieuReception
+            });
+
+            var markerReception = new google.maps.Marker({
+                position: lieuReception,
+                map: map,
+                title: 'Lieu de Réception',
+                icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+            });
+
+            var markerHotel1 = new google.maps.Marker({
+                position: hotel1,
+                map: map,
+                title: 'Hôtel Le Bois-Plage',
+                icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            });
+
+            var markerHotel2 = new google.maps.Marker({
+                position: hotel2,
+                map: map,
+                title: 'Chambres d\'hôtes Les Fleurs',
+                icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            });
+
+            var markerAirbnb = new google.maps.Marker({
+                position: airbnb,
+                map: map,
+                title: 'Airbnb La Maison',
+                icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+            });
+        }
+
+        window.onload = initMap;
+    </script>
+</body>
+</html>
