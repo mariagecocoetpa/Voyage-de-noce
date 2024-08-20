@@ -1,17 +1,21 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const photosSection = document.getElementById('photos');
+document.getElementById('uploadForm').onsubmit = function(event) {
+    event.preventDefault();
 
-    // Exemple de photos ajoutées manuellement
-    const photos = [
-        'photo1.jpg',
-        'photo2.jpg',
-        'photo3.jpg',
-        'photo4.jpg'
-    ];
+    var file = document.getElementById('file').files[0];
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'votre-upload-preset');
 
-    photos.forEach(photo => {
-        const imgElement = document.createElement('img');
-        imgElement.src = photo;
-        photosSection.appendChild(imgElement);
+    fetch('https://api.cloudinary.com/v1_1/votre-cloud-name/image/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Photo téléchargée avec succès!');
+        // Vous pouvez mettre à jour la galerie ici
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
     });
-});
+};
