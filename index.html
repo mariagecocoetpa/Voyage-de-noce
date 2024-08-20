@@ -1,18 +1,66 @@
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accueil</title>
+    <title>Mariage de Coco & PA</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Bienvenue au mariage de Coco et PA</h1>
-    <nav>
+    <!-- Section d'accueil -->
+    <header class="hero">
+        <div class="overlay">
+            <h1>Bienvenue au mariage de Coco & PA</h1>
+            <p>10 Août 2024 - Le Bois Plage en Ré</p>
+            <a href="#details" class="btn">En savoir plus</a>
+        </div>
+    </header>
+
+    <!-- Section des détails -->
+    <section id="details" class="section details">
+        <h2>Détails du Mariage</h2>
+        <p>Rejoignez-nous pour une journée inoubliable au <strong>10 route des 1000 fleurs, 17580 Le Bois Plage en Ré</strong>.</p>
+        <p>Heure : 15h00</p>
+        <p>Dress Code : Chic décontracté</p>
+    </section>
+
+    <!-- Section hébergement -->
+    <section id="accommodations" class="section accommodations">
+        <h2>Hébergement</h2>
+        <p>Voici quelques suggestions d'hôtels et logements à proximité :</p>
         <ul>
-            <li><a href="info.html"><span class="icon">ℹ️</span> Informations</a></li>
-            <li><a href="gallery.html"><span class="icon">🖼️</span> Galerie Photos</a></li>
-            <li><a href="upload.html"><span class="icon">📤</span> Déposez vos Photos</a></li>
+            <li><strong>Hôtel de l'île</strong> - À 5 minutes du lieu de réception</li>
+            <li><strong>Villa Ré</strong> - À 10 minutes en voiture</li>
+            <li><strong>Chambres d'hôtes Fleurie</strong> - À 8 minutes en voiture</li>
         </ul>
-    </nav>
+    </section>
+
+    <!-- Section galerie -->
+    <section id="gallery" class="section gallery">
+        <h2>Galerie Photos</h2>
+        <div class="gallery-grid">
+            <img src="photo1.jpg" alt="Photo 1">
+            <img src="photo2.jpg" alt="Photo 2">
+            <img src="photo3.jpg" alt="Photo 3">
+            <!-- Ajoutez plus de photos ici -->
+        </div>
+    </section>
+
+    <!-- Section dépôt de photos -->
+    <section id="upload" class="section upload">
+        <h2>Déposez vos Photos</h2>
+        <form id="uploadForm">
+            <input type="file" name="file" id="file">
+            <button type="submit" class="btn">Uploader</button>
+        </form>
+    </section>
+
+    <!-- Section de pied de page -->
+    <footer class="footer">
+        <p>© 2024 Coco & PA - Tous droits réservés</p>
+    </footer>
+
+    <script src="scripts.js"></script>
 </body>
 </html>
