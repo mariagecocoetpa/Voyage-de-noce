@@ -44,11 +44,17 @@
             font-weight: 600;
             color: #ff6b9d;
             background: #fff5f8;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 20px;
             display: inline-block;
             margin-top: 0.5rem;
             animation: pulse 2s infinite;
+        }
+        
+        .countdown-details {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
         }
         
         @keyframes pulse {
@@ -425,6 +431,11 @@
             #map-container {
                 height: 400px;
             }
+            
+            .countdown {
+                font-size: 1rem;
+                padding: 0.5rem 1rem;
+            }
         }
     </style>
 </head>
@@ -434,6 +445,9 @@
         <p class="subtitle">21 Février - 14 Mars 2026</p>
         <div class="countdown" id="countdown">
             Chargement du décompte...
+        </div>
+        <div class="countdown-details" id="countdown-details">
+            Départ de l'avion depuis Paris
         </div>
     </header>
     
@@ -528,27 +542,51 @@
 
         let map;
         let mapMarkers = [];
+        let countdownInterval;
 
-        // Fonction pour calculer le décompte
+        // Fonction pour calculer le décompte précis
         function updateCountdown() {
-            const firstDay = new Date('2026-02-21');
-            const today = new Date();
+            // Date et heure de départ de l'avion depuis Paris (21 février 2026, 19:45 heure de Tokyo)
+            // Mais le vol part de Paris, donc nous devons calculer l'heure de départ de Paris
+            // Supposons un vol de 13h depuis Paris avec escale à Istanbul
+            // Donc départ de Paris vers 06:45 heure de Paris le 21 février 2026
+            const departParis = new Date('2026-02-21T06:45:00+01:00'); // Heure de Paris (UTC+1)
             
-            // Mettre les deux dates à minuit pour une comparaison précise
-            today.setHours(0, 0, 0, 0);
-            firstDay.setHours(0, 0, 0, 0);
+            const now = new Date();
             
-            const diffTime = firstDay - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffTime = departParis - now;
             
             const countdownElement = document.getElementById('countdown');
+            const detailsElement = document.getElementById('countdown-details');
+            
+            if (diffTime <= 0) {
+                countdownElement.textContent = "L'avion a décollé ! Bon voyage !";
+                detailsElement.textContent = "Vol Paris → Tokyo en cours";
+                clearInterval(countdownInterval);
+                return;
+            }
+            
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+            const diffSeconds = Math.floor((diffTime % (1000 * 60)) / 1000);
             
             if (diffDays > 0) {
-                countdownElement.textContent = `${diffDays} jour${diffDays > 1 ? 's' : ''} avant le départ !`;
-            } else if (diffDays === 0) {
-                countdownElement.textContent = "C'est aujourd'hui ! Bon voyage !";
+                countdownElement.innerHTML = `
+                    <div>${diffDays} jour${diffDays > 1 ? 's' : ''}</div>
+                    <div>${diffHours}h ${diffMinutes}m ${diffSeconds}s</div>
+                `;
+                detailsElement.textContent = `Départ de Paris à 06:45 (vol Paris → Tokyo)`;
+            } else if (diffHours > 0) {
+                countdownElement.innerHTML = `
+                    <div>${diffHours}h ${diffMinutes}m ${diffSeconds}s</div>
+                `;
+                detailsElement.textContent = `Départ de Paris à 06:45 (vol Paris → Tokyo)`;
             } else {
-                countdownElement.textContent = "Le voyage a déjà commencé !";
+                countdownElement.innerHTML = `
+                    <div>${diffMinutes}m ${diffSeconds}s</div>
+                `;
+                detailsElement.textContent = `Départ de Paris à 06:45 (vol Paris → Tokyo)`;
             }
         }
 
@@ -578,6 +616,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialiser le décompte
             updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
             
             const dayDropdown = document.getElementById('day-dropdown');
             
