@@ -177,19 +177,18 @@
             gap: 1.5rem;
             margin-bottom: 1.5rem;
             font-size: 0.9rem;
-            cursor: pointer;
             padding: 0.75rem;
             border-radius: 4px;
             transition: all 0.2s;
         }
         
-        .activity:hover {
-            background: #fff5f8;
-            transform: translateX(4px);
+        .activity.clickable {
+            cursor: pointer;
         }
         
         .activity.clickable:hover {
-            background: #fff0f5;
+            background: #fff5f8;
+            transform: translateX(4px);
         }
         
         .time {
@@ -216,7 +215,7 @@
             transition: opacity 0.2s;
         }
         
-        .activity:hover .map-link {
+        .activity.clickable:hover .map-link {
             opacity: 1;
         }
         
