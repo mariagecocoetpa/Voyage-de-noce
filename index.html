@@ -458,7 +458,7 @@
                 <div id="map"></div>
             </div>
             <p style="text-align: center; color: #666; font-size: 0.9rem;">
-                Carte interactive montrant tous les lieux de votre voyage
+                Carte interactive montrant tous les lieux de votre voyage (sans les temps libres et détente)
             </p>
         </div>
     </div>
@@ -875,6 +875,12 @@
             return mealKeywords.some(keyword => lowerTitle.includes(keyword));
         }
 
+        function isLeisureActivity(activityTitle) {
+            const leisureKeywords = ['temps libre', 'détente', 'repos', 'fin de journée', 'soirée', 'shopping', 'massage', 'baignade', 'coucher de soleil'];
+            const lowerTitle = activityTitle.toLowerCase();
+            return leisureKeywords.some(keyword => lowerTitle.includes(keyword));
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const dayDropdown = document.getElementById('day-dropdown');
             
@@ -1012,9 +1018,9 @@
                     });
                 }
                 
-                // Ajouter les activités
+                // Ajouter les activités (sauf les repas et les activités de loisir non spécifiques)
                 jour.activites.forEach(activite => {
-                    if (activite.coordonnees && !isMeal(activite.title)) {
+                    if (activite.coordonnees && !isMeal(activite.title) && !isLeisureActivity(activite.title)) {
                         const [lat, lng] = activite.coordonnees.split(',').map(coord => parseFloat(coord.trim()));
                         allPoints.push({
                             lat,
@@ -1110,7 +1116,8 @@
             jour.activites.forEach(activite => {
                 const hasLocation = activite.lieu && activite.coordonnees;
                 const isMealActivity = isMeal(activite.title);
-                const isClickable = hasLocation && !isMealActivity;
+                const isLeisure = isLeisureActivity(activite.title);
+                const isClickable = hasLocation && !isMealActivity && !isLeisure;
                 
                 html += `
                     <div class="activity ${isClickable ? 'clickable' : ''}" ${isClickable ? `onclick="window.open('${getMapsLink(activite.coordonnees, activite.lieu)}', '_blank')"` : ''}>
