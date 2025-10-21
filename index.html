@@ -742,6 +742,41 @@
             font-weight: 600;
         }
         
+        /* Navigation des jours */
+        .day-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-arrow {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+        
+        .nav-arrow:hover:not(.disabled) {
+            background: #1976d2;
+            transform: scale(1.1);
+        }
+        
+        .nav-arrow.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
@@ -800,6 +835,16 @@
             
             #map-legend {
                 flex-direction: column;
+            }
+            
+            .day-navigation {
+                gap: 0.5rem;
+            }
+            
+            .nav-arrow {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -870,11 +915,16 @@
                 <h2 class="page-title">Planning Journalier</h2>
                 <p class="page-subtitle">Découvrez le détail de chaque journée de votre voyage</p>
                 
-                <div class="dropdown-container">
-                    <select class="day-dropdown" id="day-dropdown">
-                        <option value="">Sélectionnez un jour...</option>
-                        <!-- Les options seront générées par JavaScript -->
-                    </select>
+                <!-- Navigation par flèches -->
+                <div class="day-navigation">
+                    <button class="nav-arrow" id="prev-day" disabled>←</button>
+                    <div class="dropdown-container" style="flex: 1; max-width: 400px;">
+                        <select class="day-dropdown" id="day-dropdown">
+                            <option value="">Sélectionnez un jour...</option>
+                            <!-- Les options seront générées par JavaScript -->
+                        </select>
+                    </div>
+                    <button class="nav-arrow" id="next-day">→</button>
                 </div>
                 
                 <div class="day-details" id="day-details">
@@ -1087,15 +1137,15 @@
                         { time: "12:30", title: "Déjeuner", description: "Repas à Marunouchi", location: "Marunouchi, Tokyo, Japon" },
                         { time: "14:00", title: "TeamLab Planets", description: "Expérience artistique numérique immersive", location: "TeamLab Planets, Tokyo, Japon" },
                         { time: "16:30", title: "Fin de la visite", description: "Fin de l'expérience TeamLab", location: "TeamLab Planets, Tokyo, Japon" },
-                        { time: "17:30", title: "Transfert vers Odaiba", description: "Trajet vers l'île artificielle", location: "Statue of Liberty - Odaiba, Tokyo, Japon" },
-                        { time: "18:30", title: "Odaiba et vue sur la baie", description: "Découverte d'Odaiba et vue sur la baie de Tokyo", location: "Statue of Liberty - Odaiba, Tokyo, Japon" },
+                        { time: "17:30", title: "Transfert vers Odaiba", description: "Trajet vers l'île artificielle", location: "Odaiba, Tokyo, Japon" },
+                        { time: "18:30", title: "Odaiba et vue sur la baie", description: "Découverte d'Odaiba et vue sur la baie de Tokyo", location: "Odaiba, Tokyo, Japon" },
                         { time: "20:30", title: "Dîner", description: "Repas à Odaiba", location: "Odaiba, Tokyo, Japon" },
                         { time: "22:00", title: "Retour à l'hôtel", description: "Retour à The B Ginza", location: "The B Ginza, Ginza, Tokyo" }
                     ],
                     pointsInteret: [
                         { nom: "Palais Impérial", description: "Résidence principale de l'Empereur du Japon", location: "Palais Impérial de Tokyo, Japon", type: "culture", planned: true },
                         { nom: "TeamLab Planets", description: "Expérience artistique numérique immersive", location: "TeamLab Planets, Tokyo, Japon", type: "art", planned: true },
-                        { nom: "Odaiba", description: "Île artificielle avec centres commerciaux et divertissements", location: "Statue of Liberty - Odaiba, Tokyo, Japon", type: "entertainment", planned: true },
+                        { nom: "Odaiba", description: "Île artificielle avec centres commerciaux et divertissements", location: "Odaiba, Tokyo, Japon", type: "entertainment", planned: true },
                         { nom: "Rainbow Bridge", description: "Pont illuminé offrant une vue magnifique sur Tokyo", location: "Rainbow Bridge, Tokyo, Japon", type: "viewpoint", planned: false }
                     ]
                 },
@@ -1586,6 +1636,7 @@
         let markers = [];
         let currentLayer = 'planned';
         const geocodingCache = {};
+        let currentDayIndex = -1;
 
         // Fonction de géocodage
         async function geocodeLocation(locationName) {
@@ -1737,6 +1788,19 @@
                 }
             });
 
+            // Gérer les flèches de navigation
+            document.getElementById('prev-day').addEventListener('click', function() {
+                if (currentDayIndex > 0) {
+                    navigateToDay(currentDayIndex - 1);
+                }
+            });
+
+            document.getElementById('next-day').addEventListener('click', function() {
+                if (currentDayIndex < voyageData.jours.length - 1) {
+                    navigateToDay(currentDayIndex + 1);
+                }
+            });
+
             // Gérer le changement de sélection dans le menu déroulant des villes
             cityDropdown.addEventListener('change', function() {
                 generatePointsInteret(this.value);
@@ -1769,6 +1833,14 @@
 
             // Afficher la première page
             showPage('planning');
+        }
+
+        // Fonction pour naviguer vers un jour spécifique
+        function navigateToDay(index) {
+            const dayDropdown = document.getElementById('day-dropdown');
+            dayDropdown.value = index;
+            saveDaySelection(index);
+            showDayDetails(index);
         }
 
         // Fonction pour afficher une page spécifique
@@ -1819,6 +1891,7 @@
 
         // Fonction pour afficher les détails d'un jour spécifique
         function showDayDetails(index) {
+            currentDayIndex = index;
             const jour = voyageData.jours[index];
             const dayDetails = document.getElementById('day-details');
             
@@ -1900,6 +1973,33 @@
             }
             
             dayDetails.innerHTML = html;
+            
+            // Mettre à jour l'état des flèches de navigation
+            updateNavigationArrows();
+        }
+
+        // Fonction pour mettre à jour l'état des flèches de navigation
+        function updateNavigationArrows() {
+            const prevArrow = document.getElementById('prev-day');
+            const nextArrow = document.getElementById('next-day');
+            
+            // Désactiver la flèche précédente si on est sur le premier jour
+            if (currentDayIndex <= 0) {
+                prevArrow.classList.add('disabled');
+                prevArrow.disabled = true;
+            } else {
+                prevArrow.classList.remove('disabled');
+                prevArrow.disabled = false;
+            }
+            
+            // Désactiver la flèche suivante si on est sur le dernier jour
+            if (currentDayIndex >= voyageData.jours.length - 1) {
+                nextArrow.classList.add('disabled');
+                nextArrow.disabled = true;
+            } else {
+                nextArrow.classList.remove('disabled');
+                nextArrow.disabled = false;
+            }
         }
 
         // Fonction pour générer la section Points d'Intérêt
@@ -2226,6 +2326,8 @@
         // Fonctions pour la sauvegarde/chargement de la sélection du jour
         function saveDaySelection(index) {
             localStorage.setItem('lastSelectedDay', index);
+            currentDayIndex = index;
+            updateNavigationArrows();
         }
 
         function loadDaySelection() {
