@@ -1530,6 +1530,36 @@
         const geocodingCache = {};
         let currentDayIndex = -1;
 
+        // Fonction pour trouver le jour le plus proche de la date actuelle
+        function findClosestDayIndex() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // On ignore l'heure pour comparer seulement les dates
+            
+            let closestIndex = 0;
+            let smallestDiff = Infinity;
+            
+            voyageData.jours.forEach((jour, index) => {
+                const jourDate = new Date(jour.date);
+                jourDate.setHours(0, 0, 0, 0);
+                
+                // Calculer la différence en millisecondes
+                const diff = jourDate.getTime() - today.getTime();
+                
+                // Si la date du jour est aujourd'hui ou dans le futur ET la différence est plus petite
+                if (diff >= 0 && diff < smallestDiff) {
+                    smallestDiff = diff;
+                    closestIndex = index;
+                }
+            });
+            
+            // Si aucun jour futur n'est trouvé, prendre le dernier jour
+            if (smallestDiff === Infinity) {
+                closestIndex = voyageData.jours.length - 1;
+            }
+            
+            return closestIndex;
+        }
+
         // Fonction de géocodage
         async function geocodeLocation(locationName) {
             // Vérifier le cache d'abord
@@ -1662,7 +1692,7 @@
                 cityDropdown.appendChild(option);
             });
 
-            // Charger la sélection du jour sauvegardée
+            // Charger la sélection du jour sauvegardée ou le jour le plus proche
             loadDaySelection();
 
             // Gérer le changement de sélection dans le menu déroulant des jours
@@ -2225,11 +2255,19 @@
         function loadDaySelection() {
             const lastIndex = localStorage.getItem('lastSelectedDay');
             if (lastIndex !== null) {
+                // Si une sélection existe dans le localStorage, l'utiliser
                 const dayDropdown = document.getElementById('day-dropdown');
                 dayDropdown.value = lastIndex;
                 if (parseInt(lastIndex) >= 0) {
                     showDayDetails(parseInt(lastIndex));
                 }
+            } else {
+                // Sinon, trouver le jour le plus proche de la date actuelle
+                const closestIndex = findClosestDayIndex();
+                const dayDropdown = document.getElementById('day-dropdown');
+                dayDropdown.value = closestIndex;
+                saveDaySelection(closestIndex);
+                showDayDetails(closestIndex);
             }
         }
     </script>
