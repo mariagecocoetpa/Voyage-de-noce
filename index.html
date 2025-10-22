@@ -15,6 +15,8 @@
             --warning: #ff9800;
             --japan: #bc002d;
             --philippines: #0038a8;
+            --arrow-japan: #ff6b6b;
+            --arrow-philippines: #4dabf7;
         }
         
         * {
@@ -742,7 +744,7 @@
             font-weight: 600;
         }
         
-        /* Navigation des jours */
+        /* NOUVEAU DESIGN DES FLÈCHES DE NAVIGATION - SANS FOND */
         .day-navigation {
             display: flex;
             justify-content: center;
@@ -752,29 +754,36 @@
         }
         
         .nav-arrow {
-            background: var(--secondary);
-            color: white;
+            background: none;
             border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
+            color: transparent;
+            background-image: linear-gradient(135deg, var(--arrow-japan) 0%, var(--arrow-philippines) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .nav-arrow:hover:not(.disabled) {
-            background: #1976d2;
-            transform: scale(1.1);
+            transform: translateY(-3px) scale(1.1);
+            background-image: linear-gradient(135deg, var(--arrow-philippines) 0%, var(--arrow-japan) 100%);
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
         .nav-arrow.disabled {
-            background: #ccc;
+            background-image: none;
+            color: #cccccc;
             cursor: not-allowed;
             opacity: 0.5;
+            transform: none;
+            text-shadow: none;
         }
         
         @media (max-width: 768px) {
@@ -842,9 +851,7 @@
             }
             
             .nav-arrow {
-                width: 36px;
-                height: 36px;
-                font-size: 1rem;
+                font-size: 2.5rem;
             }
         }
     </style>
@@ -915,7 +922,7 @@
                 <h2 class="page-title">Planning Journalier</h2>
                 <p class="page-subtitle">Découvrez le détail de chaque journée de votre voyage</p>
                 
-                <!-- Navigation par flèches -->
+                <!-- Navigation par flèches avec nouveau design -->
                 <div class="day-navigation">
                     <button class="nav-arrow" id="prev-day" disabled>←</button>
                     <div class="dropdown-container" style="flex: 1; max-width: 400px;">
