@@ -12,11 +12,8 @@
             --light: #f8f9fa;
             --dark: #212529;
             --success: #4caf50;
-            --warning: #ff9800;
             --japan: #bc002d;
             --philippines: #0038a8;
-            --arrow-japan: #ff6b6b;
-            --arrow-philippines: #4dabf7;
         }
         
         * {
@@ -408,8 +405,6 @@
             font-weight: 600;
             transition: all 0.3s ease;
             border-bottom: 1px dotted var(--secondary);
-            display: inline-block;
-            margin-top: 0.5rem;
         }
         
         .place-link:hover {
@@ -719,73 +714,6 @@
             margin-top: 2rem;
         }
         
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-        
-        .planned-badge {
-            background: var(--success);
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .optional-badge {
-            background: var(--warning);
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 0.5rem;
-            font-weight: 600;
-        }
-        
-        /* NOUVEAU DESIGN DES FLÈCHES DE NAVIGATION - SANS FOND */
-        .day-navigation {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .nav-arrow {
-            background: none;
-            border: none;
-            font-size: 3rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: transparent;
-            background-image: linear-gradient(135deg, var(--arrow-japan) 0%, var(--arrow-philippines) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .nav-arrow:hover:not(.disabled) {
-            transform: translateY(-3px) scale(1.1);
-            background-image: linear-gradient(135deg, var(--arrow-philippines) 0%, var(--arrow-japan) 100%);
-            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        .nav-arrow.disabled {
-            background-image: none;
-            color: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.5;
-            transform: none;
-            text-shadow: none;
-        }
-        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
@@ -844,14 +772,6 @@
             
             #map-legend {
                 flex-direction: column;
-            }
-            
-            .day-navigation {
-                gap: 0.5rem;
-            }
-            
-            .nav-arrow {
-                font-size: 2.5rem;
             }
         }
     </style>
@@ -922,16 +842,11 @@
                 <h2 class="page-title">Planning Journalier</h2>
                 <p class="page-subtitle">Découvrez le détail de chaque journée de votre voyage</p>
                 
-                <!-- Navigation par flèches avec nouveau design -->
-                <div class="day-navigation">
-                    <button class="nav-arrow" id="prev-day" disabled>←</button>
-                    <div class="dropdown-container" style="flex: 1; max-width: 400px;">
-                        <select class="day-dropdown" id="day-dropdown">
-                            <option value="">Sélectionnez un jour...</option>
-                            <!-- Les options seront générées par JavaScript -->
-                        </select>
-                    </div>
-                    <button class="nav-arrow" id="next-day">→</button>
+                <div class="dropdown-container">
+                    <select class="day-dropdown" id="day-dropdown">
+                        <option value="">Sélectionnez un jour...</option>
+                        <!-- Les options seront générées par JavaScript -->
+                    </select>
                 </div>
                 
                 <div class="day-details" id="day-details">
@@ -961,11 +876,11 @@
             <!-- Page Carte -->
             <div class="page" id="carte-page">
                 <h2 class="page-title">Carte Interactive</h2>
-                <p class="page-subtitle">Visualisez les points d'intérêt et hôtels sur la carte</p>
+                <p class="page-subtitle">Visualisez votre itinéraire sur la carte</p>
                 
                 <div class="map-controls">
-                    <button class="map-btn active" data-layer="planned">Points d'intérêt certains</button>
-                    <button class="map-btn" data-layer="optional">Options temps libre</button>
+                    <button class="map-btn active" data-layer="activities">Activités Planning</button>
+                    <button class="map-btn" data-layer="interest">Points d'Intérêt</button>
                     <button class="map-btn" data-layer="hotels">Hôtels</button>
                     <button class="map-btn" data-layer="all">Tout afficher</button>
                 </div>
@@ -973,12 +888,12 @@
                 <div id="map"></div>
                 <div id="map-legend">
                     <div class="legend-item">
-                        <span class="legend-color" style="background-color: #4caf50;"></span>
-                        <span>Points d'intérêt certains</span>
+                        <span class="legend-color" style="background-color: #e91e63;"></span>
+                        <span>Activités du planning</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-color" style="background-color: #ff9800;"></span>
-                        <span>Options temps libre</span>
+                        <span class="legend-color" style="background-color: #4caf50;"></span>
+                        <span>Points d'intérêt</span>
                     </div>
                     <div class="legend-item">
                         <span class="legend-color" style="background-color: #2196f3;"></span>
@@ -1074,17 +989,18 @@
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // Données du voyage avec géocodage automatique et distinction points certains/options
+        // Données du voyage avec le planning détaillé complet
         const voyageData = {
             jours: [
                 {
                     date: "2026-02-20",
                     lieu: "Vol Paris → Istanbul",
                     pays: "International",
-                    location: "Aéroport Paris CDG, France",
+                    coordonnees: "",
                     hotel: "Nuit à bord",
                     activites: [
-                        { time: "18:50", title: "Départ de Paris CDG", description: "Vol TK1828 Paris → Istanbul", location: "Aéroport Paris CDG, France" }
+                        { time: "18:50", title: "Départ de Paris CDG", description: "Vol TK1828 Paris → Istanbul" },
+                        { time: "23:30", title: "Nuit à bord", description: "Vol de nuit vers Istanbul" }
                     ],
                     pointsInteret: []
                 },
@@ -1092,380 +1008,499 @@
                     date: "2026-02-21",
                     lieu: "Tokyo",
                     pays: "Japon",
-                    location: "Tokyo, Japon",
+                    coordonnees: "35.6715,139.7630",
                     hotel: "The B Ginza",
                     activites: [
-                        { time: "00:30", title: "Arrivée Istanbul", description: "Escale à l'aéroport d'Istanbul", location: "Aéroport d'Istanbul, Turquie" },
-                        { time: "02:30", title: "Décollage d'Istanbul", description: "Vol TK198 Istanbul → Tokyo", location: "Aéroport d'Istanbul, Turquie" },
-                        { time: "19:45", title: "Arrivée à Tokyo Haneda", description: "Atterrissage à l'aéroport de Tokyo Haneda", location: "Aéroport de Tokyo Haneda, Japon" }
+                        { time: "00:30", title: "Arrivée Istanbul", description: "Escale à l'aéroport d'Istanbul" },
+                        { time: "02:30", title: "Décollage d'Istanbul", description: "Vol TK198 Istanbul → Tokyo" },
+                        { time: "19:45", title: "Arrivée à Tokyo Haneda", description: "Atterrissage à l'aéroport de Tokyo Haneda" },
+                        { time: "20:30", title: "Transfert vers l'hôtel", description: "Trajet vers The B Ginza", coordinates: "35.6715,139.7630", mapsLink: true },
+                        { time: "21:30", title: "Installation à l'hôtel", description: "Check-in et installation dans la chambre" },
+                        { time: "22:00", title: "Première découverte de Ginza", description: "Exploration nocturne du quartier de Ginza", coordinates: "35.6715,139.7630", mapsLink: true }
                     ],
                     pointsInteret: [
-                        { nom: "The B Ginza", description: "Hôtel situé dans le quartier chic de Ginza", location: "The B Ginza, Ginza, Tokyo", type: "hotel", planned: true },
-                        { nom: "Ginza", description: "Quartier commerçant luxueux de Tokyo", location: "Ginza, Tokyo, Japon", type: "shopping", planned: true },
-                        { nom: "Tsukiji Outer Market", description: "Marché aux poissons et cuisine de rue", location: "Tsukiji Outer Market, Tokyo, Japon", type: "food", planned: false },
-                        { nom: "Hamarikyu Gardens", description: "Jardins japonais traditionnels avec maison de thé", location: "Hamarikyu Gardens, Tokyo, Japon", type: "nature", planned: false }
+                        { nom: "The B Ginza", description: "Hôtel situé dans le quartier chic de Ginza", coordonnees: "35.6715,139.7630", type: "hotel", mapsLink: true },
+                        { nom: "Ginza", description: "Quartier commerçant luxueux de Tokyo", coordonnees: "35.6715,139.7630", type: "shopping" },
+                        { nom: "Tsukiji Outer Market", description: "Marché aux poissons et cuisine de rue", coordonnees: "35.6655,139.7699", type: "food", mapsLink: true },
+                        { nom: "Hamarikyu Gardens", description: "Jardins japonais traditionnels avec maison de thé", coordonnees: "35.6602,139.7639", type: "nature", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-02-22",
                     lieu: "Tokyo",
                     pays: "Japon",
-                    location: "Tokyo, Japon",
+                    coordonnees: "35.7148,139.7967",
                     hotel: "The B Ginza",
                     activites: [
-                        { time: "09:00", title: "Temple Senso-ji à Asakusa", description: "Visite du plus ancien temple de Tokyo", location: "Temple Senso-ji, Asakusa, Tokyo" },
-                        { time: "13:30", title: "Parc Ueno et ses musées", description: "Découverte du parc et des musées", location: "Parc Ueno, Tokyo, Japon" },
-                        { time: "18:00", title: "Découverte du quartier d'Ueno", description: "Exploration du quartier et dîner", location: "Ueno, Tokyo, Japon" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "09:00", title: "Temple Senso-ji à Asakusa", description: "Visite du plus ancien temple de Tokyo", coordinates: "35.7148,139.7967", mapsLink: true },
+                        { time: "12:00", title: "Déjeuner", description: "Repas à Asakusa" },
+                        { time: "13:30", title: "Parc Ueno et ses musées", description: "Découverte du parc et des musées", coordinates: "35.7148,139.7737", mapsLink: true },
+                        { time: "17:00", title: "Fin des visites", description: "Fin des activités programmées" },
+                        { time: "18:00", title: "Découverte du quartier d'Ueno", description: "Exploration du quartier et dîner", coordinates: "35.7148,139.7737", mapsLink: true },
+                        { time: "21:00", title: "Retour à l'hôtel", description: "Retour à The B Ginza", coordinates: "35.6715,139.7630", mapsLink: true }
                     ],
                     pointsInteret: [
-                        { nom: "Temple Senso-ji", description: "Plus ancien temple bouddhiste de Tokyo", location: "Temple Senso-ji, Asakusa, Tokyo", type: "culture", planned: true },
-                        { nom: "Nakamise-dori", description: "Rue commerçante traditionnelle menant au temple", location: "Nakamise-dori, Asakusa, Tokyo", type: "shopping", planned: true },
-                        { nom: "Parc d'Ueno", description: "Grand parc avec musées, zoo et temples", location: "Parc Ueno, Tokyo, Japon", type: "nature", planned: true },
-                        { nom: "Musée National de Tokyo", description: "Plus ancien et plus grand musée du Japon", location: "Musée National de Tokyo, Parc Ueno, Tokyo", type: "culture", planned: false }
+                        { nom: "Temple Senso-ji", description: "Plus ancien temple bouddhiste de Tokyo", coordonnees: "35.7148,139.7967", type: "culture", mapsLink: true },
+                        { nom: "Nakamise-dori", description: "Rue commerçante traditionnelle menant au temple", coordonnees: "35.7115,139.7965", type: "shopping" },
+                        { nom: "Parc d'Ueno", description: "Grand parc avec musées, zoo et temples", coordonnees: "35.7148,139.7737", type: "nature", mapsLink: true },
+                        { nom: "Musée National de Tokyo", description: "Plus ancien et plus grand musée du Japon", coordonnees: "35.7188,139.7765", type: "culture", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-02-23",
                     lieu: "Tokyo",
                     pays: "Japon",
-                    location: "Tokyo, Japon",
+                    coordonnees: "35.6852,139.7528",
                     hotel: "The B Ginza",
                     activites: [
-                        { time: "09:30", title: "Jardins du Palais Impérial", description: "Visite des jardins extérieurs du Palais", location: "Palais Impérial de Tokyo, Japon" },
-                        { time: "14:00", title: "TeamLab Planets", description: "Expérience artistique numérique immersive", location: "TeamLab Planets, Tokyo, Japon" },
-                        { time: "18:30", title: "Odaiba et vue sur la baie", description: "Découverte d'Odaiba et vue sur la baie de Tokyo", location: "Statue of Liberty - Odaiba, Tokyo, Japon" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "09:30", title: "Jardins du Palais Impérial", description: "Visite des jardins extérieurs du Palais", coordinates: "35.6852,139.7528", mapsLink: true },
+                        { time: "12:30", title: "Déjeuner", description: "Repas à Marunouchi" },
+                        { time: "14:00", title: "TeamLab Planets", description: "Expérience artistique numérique immersive", coordinates: "35.6452,139.7906", mapsLink: true },
+                        { time: "16:30", title: "Fin de la visite", description: "Fin de l'expérience TeamLab" },
+                        { time: "17:30", title: "Transfert vers Odaiba", description: "Trajet vers l'île artificielle" },
+                        { time: "18:30", title: "Odaiba et vue sur la baie", description: "Découverte d'Odaiba et vue sur la baie de Tokyo", coordinates: "35.6252,139.7756", mapsLink: true },
+                        { time: "20:30", title: "Dîner", description: "Repas à Odaiba" },
+                        { time: "22:00", title: "Retour à l'hôtel", description: "Retour à The B Ginza", coordinates: "35.6715,139.7630", mapsLink: true }
                     ],
                     pointsInteret: [
-                        { nom: "Palais Impérial", description: "Résidence principale de l'Empereur du Japon", location: "Palais Impérial de Tokyo, Japon", type: "culture", planned: true },
-                        { nom: "TeamLab Planets", description: "Expérience artistique numérique immersive", location: "TeamLab Planets, Tokyo, Japon", type: "art", planned: true },
-                        { nom: "Odaiba", description: "Île artificielle avec centres commerciaux et divertissements", location: "Odaiba, Tokyo, Japon", type: "entertainment", planned: true },
-                        { nom: "Rainbow Bridge", description: "Pont illuminé offrant une vue magnifique sur Tokyo", location: "Rainbow Bridge, Tokyo, Japon", type: "viewpoint", planned: false }
+                        { nom: "Palais Impérial", description: "Résidence principale de l'Empereur du Japon", coordonnees: "35.6852,139.7528", type: "culture", mapsLink: true },
+                        { nom: "TeamLab Planets", description: "Expérience artistique numérique immersive", coordonnees: "35.6452,139.7906", type: "art", mapsLink: true },
+                        { nom: "Odaiba", description: "Île artificielle avec centres commerciaux et divertissements", coordonnees: "35.6252,139.7756", type: "entertainment", mapsLink: true },
+                        { nom: "Rainbow Bridge", description: "Pont illuminé offrant une vue magnifique sur Tokyo", coordonnees: "35.6362,139.7636", type: "viewpoint", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-02-24",
                     lieu: "Tokyo",
                     pays: "Japon",
-                    location: "Tokyo, Japon",
+                    coordonnees: "35.6751,139.7369",
                     hotel: "The B Ginza",
                     activites: [
-                        { time: "09:30", title: "Sanctuaire Hie-jinja", description: "Visite du sanctuaire aux torii rouges", location: "Sanctuaire Hie-jinja, Tokyo, Japon" },
-                        { time: "13:00", title: "Sunshine 60 Observatory", description: "Vue panoramique depuis l'observatoire", location: "Sunshine 60 Observatory, Ikebukuro, Tokyo" },
-                        { time: "18:00", title: "Quartier de Shinjuku et ses néons", description: "Exploration du quartier et ses illuminations", location: "Shinjuku, Tokyo, Japon" }
+                        { time: "08:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "09:30", title: "Sanctuaire Hie-jinja", description: "Visite du sanctuaire aux torii rouges", coordinates: "35.6751,139.7369", mapsLink: true },
+                        { time: "11:30", title: "Transfert vers Ikebukuro", description: "Trajet vers le quartier d'Ikebukuro" },
+                        { time: "12:30", title: "Déjeuner", description: "Repas à Ikebukuro" },
+                        { time: "13:00", title: "Sunshine 60 Observatory", description: "Vue panoramique depuis l'observatoire", coordinates: "35.7289,139.7189", mapsLink: true },
+                        { time: "16:00", title: "Fin de la visite", description: "Fin de la visite de l'observatoire" },
+                        { time: "17:00", title: "Transfert vers Shinjuku", description: "Trajet vers le quartier de Shinjuku" },
+                        { time: "18:00", title: "Quartier de Shinjuku et ses néons", description: "Exploration du quartier et ses illuminations", coordinates: "35.6895,139.7009", mapsLink: true },
+                        { time: "20:00", title: "Dîner", description: "Repas à Shinjuku" },
+                        { time: "22:00", title: "Retour à l'hôtel", description: "Retour à The B Ginza", coordinates: "35.6715,139.7630", mapsLink: true }
                     ],
                     pointsInteret: [
-                        { nom: "Sanctuaire Hie-jinja", description: "Sanctuaire shintoïste connu pour ses torii rouges", location: "Sanctuaire Hie-jinja, Tokyo, Japon", type: "culture", planned: true },
-                        { nom: "Ikebukuro", description: "Quartier commerçant et de divertissement", location: "Ikebukuro, Tokyo, Japon", type: "shopping", planned: true },
-                        { nom: "Sunshine 60 Observatory", description: "Observatoire offrant une vue panoramique sur Tokyo", location: "Sunshine 60 Observatory, Ikebukuro, Tokyo", type: "viewpoint", planned: true },
-                        { nom: "Shinjuku", description: "Quartier d'affaires et de divertissement nocturne", location: "Shinjuku, Tokyo, Japon", type: "entertainment", planned: true }
+                        { nom: "Sanctuaire Hie-jinja", description: "Sanctuaire shintoïste connu pour ses torii rouges", coordonnees: "35.6751,139.7369", type: "culture", mapsLink: true },
+                        { nom: "Ikebukuro", description: "Quartier commerçant et de divertissement", coordonnees: "35.7295,139.7109", type: "shopping", mapsLink: true },
+                        { nom: "Sunshine 60 Observatory", description: "Observatoire offrant une vue panoramique sur Tokyo", coordonnees: "35.7289,139.7189", type: "viewpoint", mapsLink: true },
+                        { nom: "Shinjuku", description: "Quartier d'affaires et de divertissement nocturne", coordonnees: "35.6895,139.7009", type: "entertainment", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-02-25",
                     lieu: "Furano",
                     pays: "Japon",
-                    location: "Furano, Hokkaido, Japon",
+                    coordonnees: "43.3421,142.3830",
                     hotel: "Winery Hotel and Condominium Furano",
                     activites: [
-                        { time: "09:30", title: "Enregistrement vol domestique", description: "Formalités d'enregistrement", location: "Aéroport de Tokyo Haneda, Japon" },
-                        { time: "11:10", title: "Vol Tokyo → Asahikawa", description: "Décollage pour Asahikawa", location: "Aéroport de Tokyo Haneda, Japon" },
-                        { time: "12:50", title: "Arrivée Asahikawa", description: "Atterrissage à l'aéroport d'Asahikawa", location: "Aéroport d'Asahikawa, Japon" },
-                        { time: "13:30", title: "Récupération bagages et transfert", description: "Récupération des bagages et trajet vers Furano", location: "Aéroport d'Asahikawa, Japon" },
-                        { time: "16:30", title: "Location équipement ski", description: "Location du matériel de ski", location: "Furano, Hokkaido, Japon" }
+                        { time: "07:00", title: "Petit-déjeuner et check-out", description: "Dernier repas à l'hôtel et départ" },
+                        { time: "08:00", title: "Transfert à l'aéroport", description: "Trajet vers l'aéroport de Tokyo Haneda" },
+                        { time: "09:30", title: "Enregistrement vol domestique", description: "Formalités d'enregistrement" },
+                        { time: "11:10", title: "Vol Tokyo → Asahikawa", description: "Décollage pour Asahikawa" },
+                        { time: "12:50", title: "Arrivée Asahikawa", description: "Atterrissage à l'aéroport d'Asahikawa" },
+                        { time: "13:30", title: "Récupération bagages et transfert", description: "Récupération des bagages et trajet vers Furano" },
+                        { time: "15:00", title: "Arrivée à l'hôtel", description: "Arrivée à Winery Hotel & Condominium", coordinates: "43.3421,142.3830", mapsLink: true },
+                        { time: "15:30", title: "Installation", description: "Check-in et installation dans la chambre" },
+                        { time: "16:30", title: "Location équipement ski", description: "Location du matériel de ski" },
+                        { time: "18:30", title: "Dîner", description: "Repas à l'hôtel" }
                     ],
                     pointsInteret: [
-                        { nom: "Winery Hotel and Condominium Furano", description: "Hôtel avec vue sur les vignobles et montagnes", location: "Winery Hotel and Condominium Furano, Hokkaido", type: "hotel", planned: true },
-                        { nom: "Station de ski Furano", description: "Domaine skiable réputé d'Hokkaido", location: "Station de ski Furano, Hokkaido, Japon", type: "ski", planned: true },
-                        { nom: "Vignobles de Furano", description: "Vignobles produisant le vin local", location: "Vignobles de Furano, Hokkaido, Japon", type: "food", planned: false }
+                        { nom: "Winery Hotel and Condominium Furano", description: "Hôtel avec vue sur les vignobles et montagnes", coordonnees: "43.3421,142.3830", type: "hotel", mapsLink: true },
+                        { nom: "Station de ski Furano", description: "Domaine skiable réputé d'Hokkaido", coordonnees: "43.3241,142.3860", type: "ski", mapsLink: true },
+                        { nom: "Vignobles de Furano", description: "Vignobles produisant le vin local", coordonnees: "43.3321,142.3930", type: "food", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-02-26",
                     lieu: "Furano",
                     pays: "Japon",
-                    location: "Furano, Hokkaido, Japon",
+                    coordonnees: "43.3241,142.3860",
                     hotel: "Winery Hotel and Condominium Furano",
                     activites: [
-                        { time: "09:00", title: "Ski à Furano Resort", description: "Session de ski sur les pistes", location: "Station de ski Furano, Hokkaido, Japon" },
-                        { time: "17:30", title: "Détente onsen", description: "Détente dans les sources chaudes", location: "Winery Hotel and Condominium Furano, Hokkaido" }
+                        { time: "07:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "09:00", title: "Départ station de ski", description: "Trajet vers la station de ski Furano", coordinates: "43.3241,142.3860", mapsLink: true },
+                        { time: "09:30", title: "Ski à Furano Resort", description: "Session de ski sur les pistes" },
+                        { time: "12:30", title: "Déjeuner", description: "Repas à la station" },
+                        { time: "13:30", title: "Ski après-midi", description: "Suite des activités de ski" },
+                        { time: "16:00", title: "Fin du ski", description: "Fin de la journée de ski" },
+                        { time: "16:30", title: "Retour hôtel", description: "Retour à l'hôtel", coordinates: "43.3421,142.3830", mapsLink: true },
+                        { time: "17:30", title: "Détente onsen", description: "Détente dans les sources chaudes" },
+                        { time: "19:30", title: "Dîner", description: "Repas à l'hôtel" }
                     ],
                     pointsInteret: [
-                        { nom: "Station de ski Furano", description: "Domaine skiable avec pistes pour tous niveaux", location: "Station de ski Furano, Hokkaido, Japon", type: "ski", planned: true },
-                        { nom: "Onsen de Furano", description: "Sources chaudes naturelles pour la détente", location: "Winery Hotel and Condominium Furano, Hokkaido", type: "wellness", planned: true }
+                        { nom: "Station de ski Furano", description: "Domaine skiable avec pistes pour tous niveaux", coordonnees: "43.3241,142.3860", type: "ski", mapsLink: true },
+                        { nom: "Onsen de Furano", description: "Sources chaudes naturelles pour la détente", coordonnees: "43.3421,142.3830", type: "wellness", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-02-27",
                     lieu: "Furano",
                     pays: "Japon",
-                    location: "Furano, Hokkaido, Japon",
+                    coordonnees: "43.3241,142.3860",
                     hotel: "Winery Hotel and Condominium Furano",
                     activites: [
-                        { time: "09:00", title: "Ski à Furano Resort", description: "Session de ski sur les pistes", location: "Station de ski Furano, Hokkaido, Japon" },
-                        { time: "17:30", title: "Détente onsen", description: "Détente dans les sources chaudes", location: "Winery Hotel and Condominium Furano, Hokkaido" }
+                        { time: "07:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "09:00", title: "Rencontre avec guide", description: "Rencontre avec le guide local" },
+                        { time: "09:30", title: "Guide local - spots hors-piste", description: "Exploration des zones hors-piste avec guide" },
+                        { time: "12:30", title: "Déjeuner", description: "Repas en montagne ou à la station" },
+                        { time: "13:30", title: "Suite des activités nature", description: "Suite de la découverte des spots naturels" },
+                        { time: "16:00", title: "Fin des activités", description: "Fin de la journée avec le guide" },
+                        { time: "16:30", title: "Retour hôtel", description: "Retour à l'hôtel", coordinates: "43.3421,142.3830", mapsLink: true },
+                        { time: "17:30", title: "Repos et détente", description: "Temps libre pour se reposer" },
+                        { time: "19:30", title: "Dîner", description: "Repas à l'hôtel" }
                     ],
                     pointsInteret: [
-                        { nom: "Zones hors-piste Furano", description: "Secteurs pour skieurs expérimentés avec guide", location: "Station de ski Furano, Hokkaido, Japon", type: "ski", planned: true },
-                        { nom: "Paysages montagneux", description: "Vues panoramiques sur les montagnes d'Hokkaido", location: "Furano, Hokkaido, Japon", type: "nature", planned: false }
+                        { nom: "Zones hors-piste Furano", description: "Secteurs pour skieurs expérimentés avec guide", coordonnees: "43.3241,142.3860", type: "ski", mapsLink: true },
+                        { nom: "Paysages montagneux", description: "Vues panoramiques sur les montagnes d'Hokkaido", coordonnees: "43.3241,142.3860", type: "nature", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-02-28",
                     lieu: "Furano",
                     pays: "Japon",
-                    location: "Furano, Hokkaido, Japon",
+                    coordonnees: "43.3421,142.3830",
                     hotel: "Winery Hotel and Condominium Furano",
                     activites: [
-                        { time: "09:00", title: "Ski à Furano Resort", description: "Session de ski sur les pistes", location: "Station de ski Furano, Hokkaido, Japon" },
-                        { time: "17:30", title: "Détente onsen", description: "Détente dans les sources chaudes", location: "Winery Hotel and Condominium Furano, Hokkaido" }
+                        { time: "08:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "10:00", title: "Fromagerie Furano", description: "Visite de la fromagerie locale", coordinates: "43.3321,142.3930", mapsLink: true },
+                        { time: "12:00", title: "Déjeuner", description: "Repas léger" },
+                        { time: "14:00", title: "Dégustation vin Furano", description: "Visite et dégustation à la cave locale", coordinates: "43.3321,142.3930", mapsLink: true },
+                        { time: "16:00", title: "Fin des dégustations", description: "Retour à l'hôtel" },
+                        { time: "17:00", title: "Temps libre", description: "Détente à l'hôtel" },
+                        { time: "19:00", title: "Dîner gastronomique", description: "Repas spécial dans un restaurant local" },
+                        { time: "21:30", title: "Retour à l'hôtel", description: "Retour à l'hôtel pour la nuit" }
                     ],
                     pointsInteret: [
-                        { nom: "Fromagerie Furano", description: "Fromagerie produisant des fromages locaux", location: "Fromagerie Furano, Hokkaido, Japon", type: "food", planned: true },
-                        { nom: "Furano Wine Factory", description: "Domaine viticole et cave de dégustation", location: "Furano Wine Factory, Hokkaido, Japon", type: "food", planned: true },
-                        { nom: "Paysages ruraux de Furano", description: "Champs et collines de la région", location: "Furano, Hokkaido, Japon", type: "nature", planned: false }
+                        { nom: "Fromagerie Furano", description: "Fromagerie produisant des fromages locaux", coordonnees: "43.3321,142.3930", type: "food", mapsLink: true },
+                        { nom: "Furano Wine Factory", description: "Domaine viticole et cave de dégustation", coordonnees: "43.3321,142.3930", type: "food", mapsLink: true },
+                        { nom: "Paysages ruraux de Furano", description: "Champs et collines de la région", coordonnees: "43.3421,142.3830", type: "nature", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-01",
                     lieu: "Furano",
                     pays: "Japon",
-                    location: "Furano, Hokkaido, Japon",
+                    coordonnees: "43.3241,142.3860",
                     hotel: "Winery Hotel and Condominium Furano",
                     activites: [
-                        { time: "09:00", title: "Ski à Furano Resort", description: "Session de ski sur les pistes", location: "Station de ski Furano, Hokkaido, Japon" },
-                        { time: "17:30", title: "Détente onsen", description: "Détente dans les sources chaudes", location: "Winery Hotel and Condominium Furano, Hokkaido" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "09:30", title: "Dernière session ski", description: "Dernières descentes sur les pistes" },
+                        { time: "12:30", title: "Fin du ski", description: "Retour du matériel" },
+                        { time: "13:00", title: "Déjeuner", description: "Repas à la station" },
+                        { time: "14:00", title: "Retour à l'hôtel", description: "Retour à l'hôtel", coordinates: "43.3421,142.3830", mapsLink: true },
+                        { time: "14:30", title: "Préparation bagages", description: "Préparation des bagages pour le départ" },
+                        { time: "17:00", title: "Temps libre", description: "Dernier moment à Furano" },
+                        { time: "19:00", title: "Dîner d'adieu", description: "Dernier repas à Hokkaido" }
                     ],
                     pointsInteret: [
-                        { nom: "Station de ski Furano", description: "Dernières descentes sur les pistes", location: "Station de ski Furano, Hokkaido, Japon", type: "ski", planned: true },
-                        { nom: "Centre-ville Furano", description: "Dernières emplettes et découvertes", location: "Furano, Hokkaido, Japon", type: "shopping", planned: false }
+                        { nom: "Station de ski Furano", description: "Dernières descentes sur les pistes", coordonnees: "43.3241,142.3860", type: "ski", mapsLink: true },
+                        { nom: "Centre-ville Furano", description: "Dernières emplettes et découvertes", coordonnees: "43.3421,142.3830", type: "shopping", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-02",
                     lieu: "Kyoto",
                     pays: "Japon",
-                    location: "Kyoto, Japon",
+                    coordonnees: "35.0116,135.7681",
                     hotel: "Hôtel à Kyoto (à déterminer)",
                     activites: [
-                        { time: "08:30", title: "Transfert aéroport", description: "Trajet vers l'aéroport de Shin Chitose", location: "Aéroport de Shin Chitose, Hokkaido" },
-                        { time: "11:30", title: "Enregistrement vol", description: "Formalités d'enregistrement", location: "Aéroport de Shin Chitose, Hokkaido" },
-                        { time: "14:00", title: "Vol Shin Chitose → Osaka Itami", description: "Décollage pour Osaka", location: "Aéroport de Shin Chitose, Hokkaido" },
-                        { time: "16:05", title: "Arrivée Osaka", description: "Atterrissage à l'aéroport d'Osaka Itami", location: "Aéroport d'Osaka Itami, Japon" },
-                        { time: "16:45", title: "Récupération bagages", description: "Récupération des bagages", location: "Aéroport d'Osaka Itami, Japon" },
-                        { time: "17:15", title: "Transfert vers Kyoto", description: "Trajet en train ou bus vers Kyoto", location: "Aéroport d'Osaka Itami, Japon" },
-                        { time: "18:30", title: "Arrivée Kyoto et installation", description: "Arrivée à Kyoto et check-in à l'hôtel", location: "Kyoto, Japon" }
+                        { time: "07:00", title: "Petit-déjeuner et check-out", description: "Dernier repas à l'hôtel et départ" },
+                        { time: "08:00", title: "Transfert aéroport", description: "Trajet vers l'aéroport de Shin Chitose" },
+                        { time: "10:00", title: "Enregistrement vol", description: "Formalités d'enregistrement" },
+                        { time: "14:00", title: "Vol Shin Chitose → Osaka Itami", description: "Décollage pour Osaka" },
+                        { time: "16:05", title: "Arrivée Osaka", description: "Atterrissage à l'aéroport d'Osaka Itami" },
+                        { time: "16:45", title: "Récupération bagages", description: "Récupération des bagages" },
+                        { time: "17:15", title: "Transfert vers Kyoto", description: "Trajet en train ou bus vers Kyoto" },
+                        { time: "18:30", title: "Arrivée Kyoto et installation", description: "Arrivée à Kyoto et check-in à l'hôtel" },
+                        { time: "19:30", title: "Dîner", description: "Repas dans le quartier de l'hôtel" }
                     ],
                     pointsInteret: [
-                        { nom: "Gare de Kyoto", description: "Gare moderne avec centre commercial et observatoire", location: "Gare de Kyoto, Japon", type: "transport", planned: true },
-                        { nom: "Pontocho", description: "Allée traditionnelle avec restaurants et bars", location: "Pontocho, Kyoto, Japon", type: "food", planned: false }
+                        { nom: "Gare de Kyoto", description: "Gare moderne avec centre commercial et observatoire", coordonnees: "34.9858,135.7586", type: "transport", mapsLink: true },
+                        { nom: "Pontocho", description: "Allée traditionnelle avec restaurants et bars", coordonnees: "35.0056,135.7691", type: "food", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-03",
                     lieu: "Kyoto",
                     pays: "Japon",
-                    location: "Kyoto, Japon",
+                    coordonnees: "35.0394,135.7292",
                     hotel: "Hôtel à Kyoto (à déterminer)",
                     activites: [
-                        { time: "09:00", title: "Kinkaku-ji (Pavillon d'Or)", description: "Visite du célèbre temple recouvert d'or", location: "Kinkaku-ji, Kyoto, Japon" },
-                        { time: "11:30", title: "Marché Nishiki", description: "Découverte du marché alimentaire traditionnel", location: "Marché Nishiki, Kyoto, Japon" },
-                        { time: "12:30", title: "Déjeuner au marché", description: "Repas avec spécialités locales", location: "Marché Nishiki, Kyoto, Japon" },
-                        { time: "14:00", title: "Sanctuaire Heian", description: "Visite du sanctuaire et ses jardins", location: "Sanctuaire Heian, Kyoto, Japon" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "09:00", title: "Kinkaku-ji (Pavillon d'Or)", description: "Visite du célèbre temple recouvert d'or", coordinates: "35.0394,135.7292", mapsLink: true },
+                        { time: "11:00", title: "Transfert vers le centre", description: "Trajet vers le marché Nishiki" },
+                        { time: "11:30", title: "Marché Nishiki", description: "Découverte du marché alimentaire traditionnel", coordinates: "35.0051,135.7628", mapsLink: true },
+                        { time: "12:30", title: "Déjeuner au marché", description: "Repas avec spécialités locales" },
+                        { time: "14:00", title: "Sanctuaire Heian", description: "Visite du sanctuaire et ses jardins", coordinates: "35.0158,135.7822", mapsLink: true },
+                        { time: "16:00", title: "Fin des visites", description: "Fin des activités programmées" },
+                        { time: "17:00", title: "Temps libre", description: "Exploration libre de Kyoto" },
+                        { time: "19:00", title: "Dîner", description: "Repas dans le quartier de Gion" }
                     ],
                     pointsInteret: [
-                        { nom: "Kinkaku-ji (Pavillon d'Or)", description: "Temple bouddhiste recouvert de feuilles d'or", location: "Kinkaku-ji, Kyoto, Japon", type: "culture", planned: true },
-                        { nom: "Marché Nishiki", description: "Marché couvert avec spécialités locales", location: "Marché Nishiki, Kyoto, Japon", type: "food", planned: true },
-                        { nom: "Sanctuaire Heian", description: "Sanctuaire shintoïste avec jardins paisibles", location: "Sanctuaire Heian, Kyoto, Japon", type: "culture", planned: true },
-                        { nom: "Gion", description: "Quartier des geishas et maisons de thé", location: "Gion, Kyoto, Japon", type: "culture", planned: false }
+                        { nom: "Kinkaku-ji (Pavillon d'Or)", description: "Temple bouddhiste recouvert de feuilles d'or", coordonnees: "35.0394,135.7292", type: "culture", mapsLink: true },
+                        { nom: "Marché Nishiki", description: "Marché couvert avec spécialités locales", coordonnees: "35.0051,135.7628", type: "food", mapsLink: true },
+                        { nom: "Sanctuaire Heian", description: "Sanctuaire shintoïste avec jardins paisibles", coordonnees: "35.0158,135.7822", type: "culture", mapsLink: true },
+                        { nom: "Gion", description: "Quartier des geishas et maisons de thé", coordonnees: "35.0036,135.7721", type: "culture", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-04",
                     lieu: "Kyoto",
                     pays: "Japon",
-                    location: "Kyoto, Japon",
+                    coordonnees: "34.9671,135.7727",
                     hotel: "Hôtel à Kyoto (à déterminer)",
                     activites: [
-                        { time: "07:30", title: "Fushimi Inari (visite tôt)", description: "Visite du sanctuaire aux milliers de torii", location: "Fushimi Inari Taisha, Kyoto, Japon" },
-                        { time: "10:00", title: "Chemin du Philosophe", description: "Promenade le long du canal pittoresque", location: "Chemin du Philosophe, Kyoto, Japon" },
-                        { time: "12:00", title: "Déjeuner", description: "Repas le long du canal", location: "Chemin du Philosophe, Kyoto, Japon" },
-                        { time: "18:00", title: "Quartier de Pontocho", description: "Exploration du quartier traditionnel", location: "Pontocho, Kyoto, Japon" }
+                        { time: "07:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "07:30", title: "Fushimi Inari (visite tôt)", description: "Visite du sanctuaire aux milliers de torii", coordinates: "34.9671,135.7727", mapsLink: true },
+                        { time: "09:30", title: "Fin de la visite", description: "Fin de la visite du sanctuaire" },
+                        { time: "10:00", title: "Chemin du Philosophe", description: "Promenade le long du canal pittoresque", coordinates: "35.0158,135.7822", mapsLink: true },
+                        { time: "12:00", title: "Déjeuner", description: "Repas le long du canal" },
+                        { time: "13:00", title: "Temps libre", description: "Suite de la promenade ou visites annexes" },
+                        { time: "16:00", title: "Retour à l'hôtel", description: "Retour à l'hôtel pour se reposer" },
+                        { time: "18:00", title: "Quartier de Pontocho", description: "Exploration du quartier traditionnel", coordinates: "35.0056,135.7691", mapsLink: true },
+                        { time: "20:00", title: "Dîner", description: "Repas à Pontocho" }
                     ],
                     pointsInteret: [
-                        { nom: "Fushimi Inari Taisha", description: "Sanctuaire célèbre pour ses milliers de torii rouges", location: "Fushimi Inari Taisha, Kyoto, Japon", type: "culture", planned: true },
-                        { nom: "Chemin du Philosophe", description: "Sentier pédestre le long d'un canal pittoresque", location: "Chemin du Philosophe, Kyoto, Japon", type: "nature", planned: true },
-                        { nom: "Temple Ginkaku-ji", description: "Temple du Pavillon d'Argent et ses jardins", location: "Ginkaku-ji, Kyoto, Japon", type: "culture", planned: false },
-                        { nom: "Pontocho", description: "Allée traditionnelle avec restaurants", location: "Pontocho, Kyoto, Japon", type: "food", planned: false }
+                        { nom: "Fushimi Inari Taisha", description: "Sanctuaire célèbre pour ses milliers de torii rouges", coordonnees: "34.9671,135.7727", type: "culture", mapsLink: true },
+                        { nom: "Chemin du Philosophe", description: "Sentier pédestre le long d'un canal pittoresque", coordonnees: "35.0158,135.7822", type: "nature", mapsLink: true },
+                        { nom: "Temple Ginkaku-ji", description: "Temple du Pavillon d'Argent et ses jardins", coordonnees: "35.0271,135.7982", type: "culture", mapsLink: true },
+                        { nom: "Pontocho", description: "Allée traditionnelle avec restaurants", coordonnees: "35.0056,135.7691", type: "food", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-05",
                     lieu: "Nara",
                     pays: "Japon",
-                    location: "Nara, Japon",
+                    coordonnees: "34.6851,135.8048",
                     hotel: "Hôtel à Kyoto (à déterminer)",
                     activites: [
-                        { time: "08:30", title: "Train pour Nara", description: "Trajet en train vers Nara", location: "Gare de Kyoto, Japon" },
-                        { time: "09:30", title: "Arrivée Nara", description: "Arrivée à Nara et début des visites", location: "Nara, Japon" },
-                        { time: "09:45", title: "Todai-ji et grand Bouddha", description: "Visite du temple et du grand Bouddha", location: "Todai-ji, Nara, Japon" },
-                        { time: "11:30", title: "Parc de Nara et cerfs", description: "Rencontre avec les cerfs sacrés en liberté", location: "Parc de Nara, Japon" },
-                        { time: "13:30", title: "Quartier traditionnel Nara-machi", description: "Exploration du quartier traditionnel", location: "Nara-machi, Nara, Japon" }
+                        { time: "07:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "08:30", title: "Train pour Nara", description: "Trajet en train vers Nara" },
+                        { time: "09:30", title: "Arrivée Nara", description: "Arrivée à Nara et début des visites" },
+                        { time: "09:45", title: "Todai-ji et grand Bouddha", description: "Visite du temple et du grand Bouddha", coordinates: "34.6889,135.8399", mapsLink: true },
+                        { time: "11:30", title: "Parc de Nara et cerfs", description: "Rencontre avec les cerfs sacrés en liberté", coordinates: "34.6851,135.8048", mapsLink: true },
+                        { time: "12:30", title: "Déjeuner", description: "Repas à Nara" },
+                        { time: "13:30", title: "Quartier traditionnel Nara-machi", description: "Exploration du quartier traditionnel", coordinates: "34.6789,135.8329", mapsLink: true },
+                        { time: "15:30", title: "Temps libre", description: "Dernières découvertes à Nara" },
+                        { time: "16:30", title: "Retour train vers Kyoto", description: "Trajet de retour vers Kyoto" },
+                        { time: "17:30", title: "Arrivée Kyoto", description: "Retour à l'hôtel" },
+                        { time: "19:00", title: "Dîner", description: "Repas dans le quartier de l'hôtel" }
                     ],
                     pointsInteret: [
-                        { nom: "Todai-ji", description: "Temple abritant le plus grand Bouddha en bronze du monde", location: "Todai-ji, Nara, Japon", type: "culture", planned: true },
-                        { nom: "Parc de Nara", description: "Parc avec centaines de cerfs sacrés en liberté", location: "Parc de Nara, Japon", type: "nature", planned: true },
-                        { nom: "Nara-machi", description: "Quartier traditionnel avec maisons anciennes", location: "Nara-machi, Nara, Japon", type: "culture", planned: true },
-                        { nom: "Kasuga Taisha", description: "Sanctuaire aux milliers de lanternes de pierre", location: "Kasuga Taisha, Nara, Japon", type: "culture", planned: false }
+                        { nom: "Todai-ji", description: "Temple abritant le plus grand Bouddha en bronze du monde", coordonnees: "34.6889,135.8399", type: "culture", mapsLink: true },
+                        { nom: "Parc de Nara", description: "Parc avec centaines de cerfs sacrés en liberté", coordonnees: "34.6851,135.8048", type: "nature", mapsLink: true },
+                        { nom: "Nara-machi", description: "Quartier traditionnel avec maisons anciennes", coordonnees: "34.6789,135.8329", type: "culture", mapsLink: true },
+                        { nom: "Kasuga Taisha", description: "Sanctuaire aux milliers de lanternes de pierre", coordonnees: "34.6814,135.8484", type: "culture", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-06",
                     lieu: "Arashiyama & Vol",
                     pays: "Japon",
-                    location: "Arashiyama, Kyoto, Japon",
+                    coordonnees: "35.0094,135.6772",
                     hotel: "Vol Osaka → Manille",
                     activites: [
-                        { time: "09:00", title: "Arashiyama (forêt bambous)", description: "Visite de la célèbre forêt de bambous", location: "Forêt de bambous d'Arashiyama, Kyoto" },
-                        { time: "13:30", title: "Transfert aéroport Kansai", description: "Trajet vers l'aéroport d'Osaka", location: "Aéroport du Kansai, Osaka, Japon" },
-                        { time: "16:30", title: "Enregistrement vol international", description: "Formalités d'enregistrement", location: "Aéroport du Kansai, Osaka, Japon" },
-                        { time: "19:35", title: "Vol Osaka → Manille", description: "Décollage pour Manille", location: "Aéroport du Kansai, Osaka, Japon" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
+                        { time: "09:00", title: "Arashiyama (forêt bambous)", description: "Visite de la célèbre forêt de bambous", coordinates: "35.0094,135.6772", mapsLink: true },
+                        { time: "12:00", title: "Fin de la visite", description: "Fin des activités à Arashiyama" },
+                        { time: "12:30", title: "Déjeuner", description: "Repas à Arashiyama" },
+                        { time: "13:30", title: "Transfert aéroport Kansai", description: "Trajet vers l'aéroport d'Osaka" },
+                        { time: "15:30", title: "Arrivée aéroport", description: "Arrivée à l'aéroport Kansai" },
+                        { time: "16:00", title: "Enregistrement vol international", description: "Formalités d'enregistrement" },
+                        { time: "19:35", title: "Vol Osaka → Manille", description: "Décollage pour Manille" },
+                        { time: "23:00", title: "Nuit à bord", description: "Vol de nuit vers Manille" }
                     ],
                     pointsInteret: [
-                        { nom: "Forêt de bambous d'Arashiyama", description: "Allée célèbre de bambous géants", location: "Forêt de bambous d'Arashiyama, Kyoto", type: "nature", planned: true },
-                        { nom: "Temple Tenryu-ji", description: "Temple classé au patrimoine mondial de l'UNESCO", location: "Temple Tenryu-ji, Arashiyama, Kyoto", type: "culture", planned: false },
-                        { nom: "Pont Togetsukyo", description: "Pont emblématique d'Arashiyama", location: "Pont Togetsukyo, Arashiyama, Kyoto", type: "viewpoint", planned: false }
+                        { nom: "Forêt de bambous d'Arashiyama", description: "Allée célèbre de bambous géants", coordonnees: "35.0094,135.6772", type: "nature", mapsLink: true },
+                        { nom: "Temple Tenryu-ji", description: "Temple classé au patrimoine mondial de l'UNESCO", coordonnees: "35.0158,135.6739", type: "culture", mapsLink: true },
+                        { nom: "Pont Togetsukyo", description: "Pont emblématique d'Arashiyama", coordonnees: "35.0158,135.6789", type: "viewpoint", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-07",
                     lieu: "Bohol",
                     pays: "Philippines",
-                    location: "Bohol, Philippines",
+                    coordonnees: "9.8499,124.1435",
                     hotel: "Fox & The Firefly",
                     activites: [
-                        { time: "23:15", title: "Arrivée Manille", description: "Arrivée à l'aéroport de Manille", location: "Aéroport de Manille, Philippines" },
-                        { time: "05:20", title: "Vol Manille → Panglao", description: "Décollage pour Panglao", location: "Aéroport de Manille, Philippines" },
-                        { time: "06:55", title: "Arrivée Panglao", description: "Atterrissage à l'aéroport de Panglao", location: "Aéroport de Panglao, Bohol, Philippines" },
-                        { time: "08:00", title: "Repos", description: "Temps de repos après le voyage", location: "Fox & The Firefly, Bohol, Philippines" },
-                        { time: "14:30", title: "Transfert Fox & The Firefly", description: "Trajet vers le lodge", location: "Fox & The Firefly, Bohol, Philippines" },
-                        { time: "20:00", title: "Observation lucioles", description: "Observation des lucioles le long de la rivière", location: "Fox & The Firefly, Bohol, Philippines" }
+                        { time: "23:15", title: "Arrivée Manille", description: "Arrivée à l'aéroport de Manille" },
+                        { time: "00:00", title: "Nuit à l'aéroport", description: "Attente de la correspondance à l'aéroport" },
+                        { time: "05:20", title: "Vol Manille → Panglao", description: "Décollage pour Panglao" },
+                        { time: "06:55", title: "Arrivée Panglao", description: "Atterrissage à l'aéroport de Panglao" },
+                        { time: "07:30", title: "Transfert Fox & The Firefly", description: "Trajet vers le lodge", coordinates: "9.8499,124.1435", mapsLink: true },
+                        { time: "08:30", title: "Arrivée et installation", description: "Check-in et installation au lodge" },
+                        { time: "10:00", title: "Repos", description: "Temps de repos après le voyage" },
+                        { time: "12:00", title: "Déjeuner", description: "Repas au lodge" },
+                        { time: "14:00", title: "Détente", description: "Temps libre pour se reposer" },
+                        { time: "18:00", title: "Dîner", description: "Repas au lodge" },
+                        { time: "20:00", title: "Observation lucioles", description: "Observation des lucioles le long de la rivière" }
                     ],
                     pointsInteret: [
-                        { nom: "Fox & The Firefly", description: "Lodge écologique avec observation de lucioles", location: "Fox & The Firefly, Bohol, Philippines", type: "hotel", planned: true },
-                        { nom: "Rivière Loboc", description: "Rivière où se trouve le lodge", location: "Rivière Loboc, Bohol, Philippines", type: "nature", planned: false }
+                        { nom: "Fox & The Firefly", description: "Lodge écologique avec observation de lucioles", coordonnees: "9.8499,124.1435", type: "hotel", mapsLink: true },
+                        { nom: "Rivière Loboc", description: "Rivière où se trouve le lodge", coordonnees: "9.8499,124.1435", type: "nature", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-08",
                     lieu: "Bohol",
                     pays: "Philippines",
-                    location: "Bohol, Philippines",
+                    coordonnees: "9.8299,124.1435",
                     hotel: "Fox & The Firefly",
                     activites: [
-                        { time: "09:00", title: "Collines de Chocolat", description: "Visite des célèbres formations géologiques", location: "Collines de Chocolat, Bohol, Philippines" },
-                        { time: "10:30", title: "Sanctuaire des Tarsiers", description: "Rencontre avec les plus petits primates du monde", location: "Sanctuaire des Tarsiers, Bohol, Philippines" },
-                        { time: "12:30", title: "Croisière rivière Loboc", description: "Croisière avec déjeuner sur la rivière", location: "Rivière Loboc, Bohol, Philippines" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas au lodge" },
+                        { time: "09:00", title: "Collines de Chocolat", description: "Visite des célèbres formations géologiques", coordinates: "9.8299,124.1435", mapsLink: true },
+                        { time: "10:30", title: "Sanctuaire des Tarsiers", description: "Rencontre avec les plus petits primates du monde", coordinates: "9.8199,124.1535", mapsLink: true },
+                        { time: "11:30", title: "Transfert vers la rivière", description: "Trajet vers la rivière Loboc" },
+                        { time: "12:30", title: "Croisière rivière Loboc", description: "Croisière avec déjeuner sur la rivière", coordinates: "9.8499,124.1435", mapsLink: true },
+                        { time: "14:00", title: "Fin de la croisière", description: "Retour au lodge" },
+                        { time: "14:30", title: "Temps libre", description: "Détente au lodge" },
+                        { time: "17:00", title: "Repos", description: "Temps de relaxation" },
+                        { time: "19:00", title: "Dîner", description: "Repas au lodge" },
+                        { time: "21:00", title: "Soirée détente", description: "Dernière soirée au lodge" }
                     ],
                     pointsInteret: [
-                        { nom: "Collines de Chocolat", description: "Formations géologiques uniques en forme de cônes", location: "Collines de Chocolat, Bohol, Philippines", type: "nature", planned: true },
-                        { nom: "Sanctuaire des Tarsiers", description: "Refuge pour les plus petits primates du monde", location: "Sanctuaire des Tarsiers, Bohol, Philippines", type: "nature", planned: true },
-                        { nom: "Croisière sur la rivière Loboc", description: "Croisière pittoresque avec déjeuner buffet", location: "Rivière Loboc, Bohol, Philippines", type: "food", planned: true }
+                        { nom: "Collines de Chocolat", description: "Formations géologiques uniques en forme de cônes", coordonnees: "9.8299,124.1435", type: "nature", mapsLink: true },
+                        { nom: "Sanctuaire des Tarsiers", description: "Refuge pour les plus petits primates du monde", coordonnees: "9.8199,124.1535", type: "nature", mapsLink: true },
+                        { nom: "Croisière sur la rivière Loboc", description: "Croisière pittoresque avec déjeuner buffet", coordonnees: "9.8499,124.1435", type: "food", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-09",
                     lieu: "Bohol",
                     pays: "Philippines",
-                    location: "Bohol, Philippines",
+                    coordonnees: "9.5799,123.8435",
                     hotel: "Amorita Resort",
                     activites: [
-                        { time: "10:00", title: "Transfert vers Amorita Resort", description: "Trajet vers le resort de Panglao", location: "Bohol, Philippines" },
-                        { time: "11:00", title: "Arrivée Amorita Resort", description: "Arrivée au resort de luxe", location: "Amorita Resort, Panglao, Bohol, Philippines" },
-                        { time: "14:00", title: "Piscine/plage", description: "Détente à la piscine ou sur la plage", location: "Amorita Resort, Panglao, Bohol, Philippines" },
-                        { time: "18:00", title: "Coucher de soleil", description: "Observation du coucher de soleil", location: "Amorita Resort, Panglao, Bohol, Philippines" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas au lodge" },
+                        { time: "09:00", title: "Check-out Fox & The Firefly", description: "Départ du lodge" },
+                        { time: "10:00", title: "Transfert vers Amorita Resort", description: "Trajet vers le resort de Panglao" },
+                        { time: "11:00", title: "Arrivée Amorita Resort", description: "Arrivée au resort de luxe", coordinates: "9.5799,123.8435", mapsLink: true },
+                        { time: "11:30", title: "Installation", description: "Check-in et installation au resort" },
+                        { time: "12:30", title: "Déjeuner", description: "Repas au resort" },
+                        { time: "14:00", title: "Détente", description: "Temps libre pour explorer le resort" },
+                        { time: "16:00", title: "Piscine/plage", description: "Détente à la piscine ou sur la plage" },
+                        { time: "18:00", title: "Coucher de soleil", description: "Observation du coucher de soleil" },
+                        { time: "19:30", title: "Dîner", description: "Repas au resort" }
                     ],
                     pointsInteret: [
-                        { nom: "Amorita Resort", description: "Resort de luxe sur les falaises de Panglao", location: "Amorita Resort, Panglao, Bohol, Philippines", type: "hotel", planned: true },
-                        { nom: "Plage d'Alona", description: "Plage de sable blanc célèbre de Panglao", location: "Plage d'Alona, Panglao, Bohol, Philippines", type: "beach", planned: false }
+                        { nom: "Amorita Resort", description: "Resort de luxe sur les falaises de Panglao", coordonnees: "9.5799,123.8435", type: "hotel", mapsLink: true },
+                        { nom: "Plage d'Alona", description: "Plage de sable blanc célèbre de Panglao", coordonnees: "9.5699,123.8535", type: "beach", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-10",
                     lieu: "Bohol",
                     pays: "Philippines",
-                    location: "Bohol, Philippines",
+                    coordonnees: "9.5199,123.6835",
                     hotel: "Amorita Resort",
                     activites: [
-                        { time: "08:00", title: "Départ pour plongée PADI", description: "Transfert vers le centre de plongée", location: "Amorita Resort, Panglao, Bohol, Philippines" },
-                        { time: "15:00", title: "Détente", description: "Temps libre pour se reposer", location: "Amorita Resort, Panglao, Bohol, Philippines" }
+                        { time: "07:00", title: "Petit-déjeuner", description: "Repas au resort" },
+                        { time: "08:00", title: "Départ pour plongée PADI", description: "Transfert vers le centre de plongée" },
+                        { time: "09:00", title: "2 plongées à Balicasag Island", description: "Plongées avec découverte du drop-off et coraux", coordinates: "9.5199,123.6835", mapsLink: true },
+                        { time: "12:30", title: "Déjeuner", description: "Repas sur l'île ou bateau" },
+                        { time: "13:30", title: "Retour plongée", description: "Suite des activités de plongée" },
+                        { time: "15:00", title: "Fin des plongées", description: "Retour vers le resort" },
+                        { time: "16:00", title: "Retour resort", description: "Retour à Amorita Resort", coordinates: "9.5799,123.8435", mapsLink: true },
+                        { time: "17:00", title: "Détente", description: "Temps libre pour se reposer" },
+                        { time: "19:00", title: "Dîner", description: "Repas au resort" }
                     ],
                     pointsInteret: [
-                        { nom: "Île de Balicasag", description: "Île réputée pour ses spots de plongée exceptionnels", location: "Île de Balicasag, Bohol, Philippines", type: "diving", planned: true },
-                        { nom: "Drop-off de Balicasag", description: "Mur de corail avec tombant spectaculaire", location: "Île de Balicasag, Bohol, Philippines", type: "diving", planned: true },
-                        { nom: "Jardin corallien", description: "Zone corallienne riche en vie marine", location: "Île de Balicasag, Bohol, Philippines", type: "diving", planned: true }
+                        { nom: "Île de Balicasag", description: "Île réputée pour ses spots de plongée exceptionnels", coordonnees: "9.5199,123.6835", type: "diving", mapsLink: true },
+                        { nom: "Drop-off de Balicasag", description: "Mur de corail avec tombant spectaculaire", coordonnees: "9.5199,123.6835", type: "diving", mapsLink: true },
+                        { nom: "Jardin corallien", description: "Zone corallienne riche en vie marine", coordonnees: "9.5199,123.6835", type: "diving", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-11",
                     lieu: "Bohol",
                     pays: "Philippines",
-                    location: "Bohol, Philippines",
+                    coordonnees: "9.5799,123.8435",
                     hotel: "Amorita Resort",
                     activites: [
-                        { time: "10:00", title: "Snorkeling avec dauphins", description: "Excursion matinale pour voir les dauphins", location: "Plage d'Alona, Panglao, Bohol, Philippines" },
-                        { time: "15:00", title: "Détente spa et plage", description: "Journée détente au resort", location: "Amorita Resort, Panglao, Bohol, Philippines" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas au resort" },
+                        { time: "08:00", title: "Option A: Snorkeling avec dauphins", description: "Excursion matinale pour voir les dauphins" },
+                        { time: "08:00", title: "Option B: Détente spa et plage", description: "Journée détente au resort" },
+                        { time: "12:00", title: "Déjeuner", description: "Repas au resort" },
+                        { time: "14:00", title: "Temps libre", description: "Activités libres au resort" },
+                        { time: "16:00", title: "Détente", description: "Temps de relaxation" },
+                        { time: "18:00", title: "Préparation dîner romantique", description: "Préparation pour le dîner spécial" },
+                        { time: "19:00", title: "Dîner romantique plage", description: "Dîner spécial sur la plage" },
+                        { time: "21:00", title: "Soirée", description: "Dernière soirée à Bohol" }
                     ],
                     pointsInteret: [
-                        { nom: "Snorkeling avec dauphins", description: "Excursion pour nager avec les dauphins", location: "Plage d'Alona, Panglao, Bohol, Philippines", type: "diving", planned: false },
-                        { nom: "Amorita Resort Spa", description: "Spa proposant des soins traditionnels", location: "Amorita Resort, Panglao, Bohol, Philippines", type: "wellness", planned: false },
-                        { nom: "Plage d'Alona", description: "Plage pour la détente et les activités nautiques", location: "Plage d'Alona, Panglao, Bohol, Philippines", type: "beach", planned: false }
+                        { nom: "Snorkeling avec dauphins", description: "Excursion pour nager avec les dauphins", coordonnees: "9.5699,123.8535", type: "diving", mapsLink: true },
+                        { nom: "Amorita Resort Spa", description: "Spa proposant des soins traditionnels", coordonnees: "9.5799,123.8435", type: "wellness", mapsLink: true },
+                        { nom: "Plage d'Alona", description: "Plage pour la détente et les activités nautiques", coordonnees: "9.5699,123.8535", type: "beach", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-12",
                     lieu: "Bohol",
                     pays: "Philippines",
-                    location: "Bohol, Philippines",
+                    coordonnees: "9.5799,123.8435",
                     hotel: "Amorita Resort",
                     activites: [
-                        { time: "09:00", title: "Activités au choix au resort", description: "Dernières activités selon envies", location: "Amorita Resort, Panglao, Bohol, Philippines" },
-                        { time: "18:00", title: "Dîner d'adieu", description: "Dernier repas aux Philippines", location: "Amorita Resort, Panglao, Bohol, Philippines" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Repas au resort" },
+                        { time: "09:00", title: "Activités au choix au resort", description: "Dernières activités selon envies" },
+                        { time: "12:00", title: "Déjeuner", description: "Repas au resort" },
+                        { time: "14:00", title: "Détente et préparation bagages", description: "Temps libre et préparation du départ" },
+                        { time: "16:00", title: "Dernier moment détente", description: "Dernière session piscine/plage" },
+                        { time: "18:00", title: "Dîner d'adieu", description: "Dernier repas aux Philippines" },
+                        { time: "20:00", title: "Soirée", description: "Dernière soirée au resort" }
                     ],
                     pointsInteret: [
-                        { nom: "Amorita Resort", description: "Dernière journée de détente au resort", location: "Amorita Resort, Panglao, Bohol, Philippines", type: "hotel", planned: true },
-                        { nom: "Plage d'Alona", description: "Derniers moments sur la plage", location: "Plage d'Alona, Panglao, Bohol, Philippines", type: "beach", planned: false }
+                        { nom: "Amorita Resort", description: "Dernière journée de détente au resort", coordonnees: "9.5799,123.8435", type: "hotel", mapsLink: true },
+                        { nom: "Plage d'Alona", description: "Derniers moments sur la plage", coordonnees: "9.5699,123.8535", type: "beach", mapsLink: true }
                     ]
                 },
                 {
                     date: "2026-03-13",
                     lieu: "Vol retour",
                     pays: "International",
-                    location: "Aéroport de Panglao, Philippines",
+                    coordonnees: "",
                     hotel: "Vol",
                     activites: [
-                        { time: "18:50", title: "Vol PR2778 Panglao → Manille", description: "Décollage de Panglao", location: "Aéroport de Panglao, Philippines" },
-                        { time: "20:25", title: "Arrivée Manille", description: "Atterrissage à l'aéroport de Manille", location: "Aéroport de Manille, Philippines" },
-                        { time: "23:30", title: "Vol EK335 Manille → Dubai", description: "Décollage pour Dubai", location: "Aéroport de Manille, Philippines" }
+                        { time: "08:00", title: "Petit-déjeuner", description: "Dernier repas au resort" },
+                        { time: "09:00", title: "Dernières activités au resort", description: "Derniers moments de détente" },
+                        { time: "12:00", title: "Déjeuner", description: "Repas au resort" },
+                        { time: "14:00", title: "Check-out Amorita Resort", description: "Départ du resort" },
+                        { time: "15:00", title: "Transfert aéroport Panglao", description: "Trajet vers l'aéroport de Panglao" },
+                        { time: "16:00", title: "Enregistrement vol PR2778", description: "Formalités d'enregistrement" },
+                        { time: "18:50", title: "Vol PR2778 Panglao → Manille", description: "Décollage pour Manille" },
+                        { time: "20:25", title: "Arrivée Manille", description: "Atterrissage à l'aéroport de Manille" },
+                        { time: "21:30", title: "Escale à Manille", description: "Correspondance pour le vol EK335" },
+                        { time: "23:30", title: "Vol EK335 Manille → Dubai", description: "Décollage pour Dubai" }
                     ],
                     pointsInteret: [
-                        { nom: "Aéroport de Panglao", description: "Départ des Philippines", type: "airport", location: "Aéroport de Panglao, Philippines", planned: true },
-                        { nom: "Aéroport de Manille", description: "Correspondance pour le vol international", type: "airport", location: "Aéroport de Manille, Philippines", planned: true }
+                        { nom: "Aéroport de Panglao", description: "Départ des Philippines", type: "airport" },
+                        { nom: "Aéroport de Manille", description: "Correspondance pour le vol international", type: "airport" }
                     ]
                 },
                 {
                     date: "2026-03-14",
-                    lieu: "Vol retour",
-                    pays: "International",
-                    location: "Aéroport de Dubai, Émirats Arabes Unis",
-                    hotel: "Vol",
+                    lieu: "Arrivée France",
+                    pays: "France",
+                    coordonnees: "",
+                    hotel: "Arrivée à Paris",
                     activites: [
-                        { time: "04:45", title: "Arrivée Dubai", description: "Atterrissage à l'aéroport de Dubai", location: "Aéroport de Dubai, Émirats Arabes Unis" },
-                        { time: "07:50", title: "Vol EK073 Dubai → Paris", description: "Décollage pour Paris", location: "Aéroport de Dubai, Émirats Arabes Unis" },
-                        { time: "12:25", title: "Arrivée Paris CDG", description: "Atterrissage à l'aéroport de Paris CDG", location: "Aéroport Paris CDG, France" }
+                        { time: "04:45", title: "Arrivée Dubai", description: "Atterrissage à l'aéroport de Dubai" },
+                        { time: "05:30", title: "Escale à Dubai", description: "Correspondance pour le vol EK073" },
+                        { time: "07:50", title: "Vol EK073 Dubai → Paris", description: "Décollage pour Paris CDG" },
+                        { time: "12:25", title: "Arrivée Paris CDG", description: "Atterrissage à Paris CDG - Fin du voyage" }
                     ],
                     pointsInteret: [
-                        { nom: "Aéroport de Dubai", description: "Escale à Dubai", type: "airport", location: "Aéroport de Dubai, Émirats Arabes Unis", planned: true },
-                        { nom: "Aéroport Paris CDG", description: "Arrivée finale à Paris", type: "airport", location: "Aéroport Paris CDG, France", planned: true }
+                        { nom: "Aéroport de Dubai", description: "Correspondance pour le vol final", type: "airport" },
+                        { nom: "Aéroport Paris CDG", description: "Arrivée en France", type: "airport" }
                     ]
                 }
             ],
@@ -1479,7 +1514,7 @@
                     equipements: ["Salle de sport", "Business center", "Restaurant", "Bar", "Salle de réunion"],
                     checkIn: "15:00",
                     checkOut: "11:00",
-                    location: "The B Ginza, Ginza, Tokyo, Japon"
+                    coordonnees: "35.6715,139.7630"
                 },
                 {
                     nom: "Winery Hotel and Condominium Furano",
@@ -1490,7 +1525,7 @@
                     equipements: ["Cuisinette", "Lave-linge", "Chauffage au sol", "Parking gratuit", "Restaurant", "Spa"],
                     checkIn: "14:00",
                     checkOut: "10:00",
-                    location: "Winery Hotel and Condominium Furano, Hokkaido, Japon"
+                    coordonnees: "43.3421,142.3830"
                 },
                 {
                     nom: "Hôtel à Kyoto (à déterminer)",
@@ -1501,7 +1536,7 @@
                     equipements: ["À déterminer"],
                     checkIn: "15:00",
                     checkOut: "11:00",
-                    location: "Kyoto, Japon"
+                    coordonnees: "35.0116,135.7681"
                 },
                 {
                     nom: "Fox & The Firefly",
@@ -1512,7 +1547,7 @@
                     equipements: ["Terrasse", "Vue sur rivière", "Restaurant", "Espace détente"],
                     checkIn: "14:00",
                     checkOut: "12:00",
-                    location: "Fox & The Firefly, Bohol, Philippines"
+                    coordonnees: "9.8499,124.1435"
                 },
                 {
                     nom: "Amorita Resort",
@@ -1523,7 +1558,7 @@
                     equipements: ["Piscine", "Spa", "Restaurant", "Bar", "Plage privée", "Centre de plongée"],
                     checkIn: "14:00",
                     checkOut: "12:00",
-                    location: "Amorita Resort, Panglao, Bohol, Philippines"
+                    coordonnees: "9.5799,123.8435"
                 }
             ]
         };
@@ -1540,68 +1575,7 @@
         // Variables globales
         let map;
         let markers = [];
-        let currentLayer = 'planned';
-        const geocodingCache = {};
-        let currentDayIndex = -1;
-
-        // Fonction pour trouver le jour le plus proche de la date actuelle
-        function findClosestDayIndex() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // On ignore l'heure pour comparer seulement les dates
-            
-            let closestIndex = 0;
-            let smallestDiff = Infinity;
-            
-            voyageData.jours.forEach((jour, index) => {
-                const jourDate = new Date(jour.date);
-                jourDate.setHours(0, 0, 0, 0);
-                
-                // Calculer la différence en millisecondes
-                const diff = jourDate.getTime() - today.getTime();
-                
-                // Si la date du jour est aujourd'hui ou dans le futur ET la différence est plus petite
-                if (diff >= 0 && diff < smallestDiff) {
-                    smallestDiff = diff;
-                    closestIndex = index;
-                }
-            });
-            
-            // Si aucun jour futur n'est trouvé, prendre le dernier jour
-            if (smallestDiff === Infinity) {
-                closestIndex = voyageData.jours.length - 1;
-            }
-            
-            return closestIndex;
-        }
-
-        // Fonction de géocodage
-        async function geocodeLocation(locationName) {
-            // Vérifier le cache d'abord
-            if (geocodingCache[locationName]) {
-                return geocodingCache[locationName];
-            }
-            
-            try {
-                const response = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}&limit=1`
-                );
-                const data = await response.json();
-                
-                if (data && data.length > 0) {
-                    const coords = {
-                        lat: parseFloat(data[0].lat),
-                        lng: parseFloat(data[0].lon)
-                    };
-                    // Mettre en cache
-                    geocodingCache[locationName] = coords;
-                    return coords;
-                }
-                return null;
-            } catch (error) {
-                console.warn('Géocodage échoué pour:', locationName);
-                return null;
-            }
-        }
+        let currentLayer = 'activities';
 
         // Fonction pour formater la date en français
         function formatDate(dateStr) {
@@ -1615,16 +1589,20 @@
             return timeStr;
         }
 
-        // Fonction pour générer le lien Google Maps avec géocodage
-        function getMapsLink(location) {
-            if (!location) return "#";
-            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+        // Fonction pour générer le lien Google Maps
+        function getMapsLink(coordinates, placeName) {
+            if (!coordinates) {
+                return "#";
+            }
+            return `https://www.google.com/maps/search/?api=1&query=${coordinates}&query_place=${encodeURIComponent(placeName)}`;
         }
 
         // Fonction pour générer le lien d'itinéraire Google Maps
-        function getDirectionsLink(location) {
-            if (!location) return "#";
-            return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
+        function getDirectionsLink(coordinates, placeName) {
+            if (!coordinates) {
+                return "#";
+            }
+            return `https://www.google.com/maps/dir/?api=1&destination=${coordinates}&destination_place=${encodeURIComponent(placeName)}`;
         }
 
         // Compte à rebours
@@ -1706,7 +1684,7 @@
                 cityDropdown.appendChild(option);
             });
 
-            // Charger la sélection du jour sauvegardée ou le jour le plus proche
+            // Charger la sélection du jour sauvegardée
             loadDaySelection();
 
             // Gérer le changement de sélection dans le menu déroulant des jours
@@ -1721,19 +1699,6 @@
                             <p>Sélectionnez un jour dans le menu déroulant pour voir les détails</p>
                         </div>
                     `;
-                }
-            });
-
-            // Gérer les flèches de navigation
-            document.getElementById('prev-day').addEventListener('click', function() {
-                if (currentDayIndex > 0) {
-                    navigateToDay(currentDayIndex - 1);
-                }
-            });
-
-            document.getElementById('next-day').addEventListener('click', function() {
-                if (currentDayIndex < voyageData.jours.length - 1) {
-                    navigateToDay(currentDayIndex + 1);
                 }
             });
 
@@ -1769,14 +1734,6 @@
 
             // Afficher la première page
             showPage('planning');
-        }
-
-        // Fonction pour naviguer vers un jour spécifique
-        function navigateToDay(index) {
-            const dayDropdown = document.getElementById('day-dropdown');
-            dayDropdown.value = index;
-            saveDaySelection(index);
-            showDayDetails(index);
         }
 
         // Fonction pour afficher une page spécifique
@@ -1827,7 +1784,6 @@
 
         // Fonction pour afficher les détails d'un jour spécifique
         function showDayDetails(index) {
-            currentDayIndex = index;
             const jour = voyageData.jours[index];
             const dayDetails = document.getElementById('day-details');
             
@@ -1835,8 +1791,8 @@
                 <div class="day-header">
                     <div class="date">${formatDate(jour.date)}</div>
                     <div class="location">
-                        <span class="country-badge ${jour.pays === 'Japon' ? 'japan-badge' : 'philippines-badge'}">${jour.pays}</span>
-                        <a href="${getDirectionsLink(jour.location)}" target="_blank" title="Voir l'itinéraire vers ${jour.lieu}">
+                        <span class="country-badge ${jour.pays === 'Japon' ? 'japan-badge' : jour.pays === 'Philippines' ? 'philippines-badge' : ''}">${jour.pays}</span>
+                        <a href="${getDirectionsLink(jour.coordonnees, jour.lieu)}" target="_blank" title="Voir l'itinéraire vers ${jour.lieu}">
                             <span class="map-icon">📍</span> ${jour.lieu}
                         </a>
                     </div>
@@ -1846,8 +1802,8 @@
             
             // Ajouter les activités
             jour.activites.forEach(activite => {
-                const mapsLink = activite.location ? 
-                    `<a href="${getDirectionsLink(activite.location)}" target="_blank" title="Voir l'itinéraire vers ${activite.title}" class="place-link">📌 Itinéraire</a>` : '';
+                const mapsLink = activite.mapsLink && activite.coordinates ? 
+                    `<a href="${getDirectionsLink(activite.coordinates, activite.title)}" target="_blank" title="Voir l'itinéraire vers ${activite.title}" class="place-link">📌 Itinéraire</a>` : '';
                 
                 html += `
                     <div class="activity">
@@ -1865,9 +1821,9 @@
             // Ajouter l'information sur l'hôtel
             if (jour.hotel && jour.hotel !== "N/A") {
                 const hotel = voyageData.hotels.find(h => h.nom === jour.hotel);
-                const hotelLocation = hotel ? hotel.location : jour.location;
-                const hotelLink = hotelLocation ? 
-                    `<a href="${getDirectionsLink(hotelLocation)}" target="_blank" title="Voir l'itinéraire vers ${jour.hotel}" class="place-link">📌 Itinéraire</a>` : '';
+                const hotelCoords = hotel ? hotel.coordonnees : jour.coordonnees;
+                const hotelLink = hotelCoords ? 
+                    `<a href="${getDirectionsLink(hotelCoords, jour.hotel)}" target="_blank" title="Voir l'itinéraire vers ${jour.hotel}" class="place-link">📌 Itinéraire</a>` : '';
                 
                 html += `
                     <div class="hotel-info">
@@ -1888,14 +1844,13 @@
                 `;
                 
                 jour.pointsInteret.forEach(place => {
-                    const plannedBadge = place.planned ? '<span class="planned-badge">Certain</span>' : '<span class="optional-badge">Option</span>';
-                    const placeLink = place.location ? 
-                        `<a href="${getDirectionsLink(place.location)}" target="_blank" title="Voir l'itinéraire vers ${place.nom}" class="place-link">📌 Itinéraire</a>` : '';
+                    const placeLink = place.mapsLink ? 
+                        `<a href="${getDirectionsLink(place.coordonnees, place.nom)}" target="_blank" title="Voir l'itinéraire vers ${place.nom}" class="place-link">📌 Itinéraire</a>` : '';
                     
                     html += `
                         <div class="place-card">
                             <div class="place-name">
-                                ${place.nom} ${plannedBadge}
+                                ${place.nom}
                             </div>
                             <div class="place-desc">${place.description} ${placeLink}</div>
                         </div>
@@ -1909,33 +1864,6 @@
             }
             
             dayDetails.innerHTML = html;
-            
-            // Mettre à jour l'état des flèches de navigation
-            updateNavigationArrows();
-        }
-
-        // Fonction pour mettre à jour l'état des flèches de navigation
-        function updateNavigationArrows() {
-            const prevArrow = document.getElementById('prev-day');
-            const nextArrow = document.getElementById('next-day');
-            
-            // Désactiver la flèche précédente si on est sur le premier jour
-            if (currentDayIndex <= 0) {
-                prevArrow.classList.add('disabled');
-                prevArrow.disabled = true;
-            } else {
-                prevArrow.classList.remove('disabled');
-                prevArrow.disabled = false;
-            }
-            
-            // Désactiver la flèche suivante si on est sur le dernier jour
-            if (currentDayIndex >= voyageData.jours.length - 1) {
-                nextArrow.classList.add('disabled');
-                nextArrow.disabled = true;
-            } else {
-                nextArrow.classList.remove('disabled');
-                nextArrow.disabled = false;
-            }
         }
 
         // Fonction pour générer la section Points d'Intérêt
@@ -1949,7 +1877,7 @@
                 if (!villes[jour.lieu]) {
                     villes[jour.lieu] = {
                         pays: jour.pays,
-                        location: jour.location,
+                        coordonnees: jour.coordonnees,
                         pointsInteret: []
                     };
                 }
@@ -1974,26 +1902,25 @@
                         <div class="day-details" style="margin-bottom: 2rem;">
                             <div class="day-header">
                                 <div class="date">
-                                    <a href="${getDirectionsLink(data.location)}" target="_blank" title="Voir l'itinéraire vers ${ville}">
+                                    <a href="${getDirectionsLink(data.coordonnees, ville)}" target="_blank" title="Voir l'itinéraire vers ${ville}">
                                         ${ville}
                                     </a>
                                 </div>
                                 <div class="location">
-                                    <span class="country-badge ${data.pays === 'Japon' ? 'japan-badge' : 'philippines-badge'}">${data.pays}</span>
+                                    <span class="country-badge ${data.pays === 'Japon' ? 'japan-badge' : data.pays === 'Philippines' ? 'philippines-badge' : ''}">${data.pays}</span>
                                 </div>
                             </div>
                             <div class="places-grid">
                     `;
                     
                     data.pointsInteret.forEach(place => {
-                        const plannedBadge = place.planned ? '<span class="planned-badge">Certain</span>' : '<span class="optional-badge">Option</span>';
-                        const placeLink = place.location ? 
-                            `<a href="${getDirectionsLink(place.location)}" target="_blank" title="Voir l'itinéraire vers ${place.nom}" class="place-link">📌 Itinéraire</a>` : '';
+                        const placeLink = place.mapsLink ? 
+                            `<a href="${getDirectionsLink(place.coordonnees, place.nom)}" target="_blank" title="Voir l'itinéraire vers ${place.nom}" class="place-link">📌 Itinéraire</a>` : '';
                         
                         html += `
                             <div class="place-card">
                                 <div class="place-name">
-                                    ${place.nom} ${plannedBadge}
+                                    ${place.nom}
                                 </div>
                                 <div class="place-desc">${place.description} ${placeLink}</div>
                             </div>
@@ -2038,97 +1965,85 @@
             updateMapLayer();
         }
 
-        // Fonction pour mettre à jour les couches de la carte avec géocodage
-        async function updateMapLayer() {
+        // Fonction pour mettre à jour les couches de la carte
+        function updateMapLayer() {
             // Supprimer tous les marqueurs existants
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
             
-            // Collecter tous les points d'intérêt
-            const allPointsInteret = [];
-            voyageData.jours.forEach(jour => {
-                jour.pointsInteret.forEach(point => {
-                    allPointsInteret.push(point);
-                });
-            });
-            
-            // Afficher les hôtels
-            if (currentLayer === 'hotels' || currentLayer === 'all') {
-                for (const hotel of voyageData.hotels) {
-                    if (hotel.location) {
-                        const coords = await geocodeLocation(hotel.location);
-                        if (coords) {
-                            const marker = L.marker([coords.lat, coords.lng], {
+            // Ajouter les marqueurs en fonction de la couche sélectionnée
+            if (currentLayer === 'activities' || currentLayer === 'all') {
+                voyageData.jours.forEach(jour => {
+                    jour.activites.forEach(activite => {
+                        if (activite.coordinates) {
+                            const [lat, lng] = activite.coordinates.split(',').map(coord => parseFloat(coord.trim()));
+                            const marker = L.marker([lat, lng], {
                                 icon: L.divIcon({
-                                    className: 'hotel-marker',
-                                    html: '🏨',
+                                    className: 'activity-marker',
+                                    html: '📍',
                                     iconSize: [25, 25]
                                 })
                             })
                             .addTo(map)
                             .bindPopup(`
-                                <b>${hotel.nom}</b><br>
-                                ${hotel.ville}, ${hotel.pays}<br>
-                                ${hotel.typeChambre}<br>
-                                Check-in: ${hotel.checkIn} | Check-out: ${hotel.checkOut}
-                                <br><a href="${getDirectionsLink(hotel.location)}" target="_blank">📌 Itinéraire</a>
+                                <b>${activite.title}</b><br>
+                                ${activite.description}<br>
+                                <em>${formatTime(activite.time)} - ${jour.lieu}</em>
+                                <br><a href="${getDirectionsLink(activite.coordinates, activite.title)}" target="_blank">📌 Itinéraire</a>
                             `);
                             markers.push(marker);
                         }
-                    }
-                }
+                    });
+                });
             }
             
-            // Afficher les points d'intérêt certains
-            if (currentLayer === 'planned' || currentLayer === 'all') {
-                for (const point of allPointsInteret) {
-                    if (point.planned && point.location) {
-                        const coords = await geocodeLocation(point.location);
-                        if (coords) {
-                            const marker = L.marker([coords.lat, coords.lng], {
+            if (currentLayer === 'hotels' || currentLayer === 'all') {
+                voyageData.hotels.forEach(hotel => {
+                    if (hotel.coordonnees) {
+                        const [lat, lng] = hotel.coordonnees.split(',').map(coord => parseFloat(coord.trim()));
+                        const marker = L.marker([lat, lng], {
+                            icon: L.divIcon({
+                                className: 'hotel-marker',
+                                html: '🏨',
+                                iconSize: [25, 25]
+                            })
+                        })
+                        .addTo(map)
+                        .bindPopup(`
+                            <b>${hotel.nom}</b><br>
+                            ${hotel.ville}, ${hotel.pays}<br>
+                            ${hotel.typeChambre}<br>
+                            Check-in: ${hotel.checkIn} | Check-out: ${hotel.checkOut}
+                            <br><a href="${getDirectionsLink(hotel.coordonnees, hotel.nom)}" target="_blank">📌 Itinéraire</a>
+                        `);
+                        markers.push(marker);
+                    }
+                });
+            }
+            
+            if (currentLayer === 'interest' || currentLayer === 'all') {
+                voyageData.jours.forEach(jour => {
+                    jour.pointsInteret.forEach(place => {
+                        if (place.coordonnees && place.mapsLink) {
+                            const [lat, lng] = place.coordonnees.split(',').map(coord => parseFloat(coord.trim()));
+                            const marker = L.marker([lat, lng], {
                                 icon: L.divIcon({
-                                    className: 'planned-marker',
-                                    html: '✅',
+                                    className: 'interest-marker',
+                                    html: '⭐',
                                     iconSize: [20, 20]
                                 })
                             })
                             .addTo(map)
                             .bindPopup(`
-                                <b>${point.nom}</b><br>
-                                ${point.description}<br>
-                                <em>Point d'intérêt certain</em>
-                                <br><a href="${getDirectionsLink(point.location)}" target="_blank">📌 Itinéraire</a>
+                                <b>${place.nom}</b><br>
+                                ${place.description}<br>
+                                <em>${jour.lieu}, ${jour.pays}</em>
+                                <br><a href="${getDirectionsLink(place.coordonnees, place.nom)}" target="_blank">📌 Itinéraire</a>
                             `);
                             markers.push(marker);
                         }
-                    }
-                }
-            }
-            
-            // Afficher les options temps libre
-            if (currentLayer === 'optional' || currentLayer === 'all') {
-                for (const point of allPointsInteret) {
-                    if (!point.planned && point.location) {
-                        const coords = await geocodeLocation(point.location);
-                        if (coords) {
-                            const marker = L.marker([coords.lat, coords.lng], {
-                                icon: L.divIcon({
-                                    className: 'optional-marker',
-                                    html: '❓',
-                                    iconSize: [20, 20]
-                                })
-                            })
-                            .addTo(map)
-                            .bindPopup(`
-                                <b>${point.nom}</b><br>
-                                ${point.description}<br>
-                                <em>Option pour temps libre</em>
-                                <br><a href="${getDirectionsLink(point.location)}" target="_blank">📌 Itinéraire</a>
-                            `);
-                            markers.push(marker);
-                        }
-                    }
-                }
+                    });
+                });
             }
         }
 
@@ -2138,8 +2053,8 @@
             let html = '';
             
             voyageData.hotels.forEach(hotel => {
-                const mapsLink = hotel.location ? 
-                    `<a href="${getDirectionsLink(hotel.location)}" target="_blank" title="Voir l'itinéraire vers ${hotel.nom}" class="place-link">📌 Itinéraire</a>` : '';
+                const mapsLink = hotel.coordonnees ? 
+                    `<a href="${getDirectionsLink(hotel.coordonnees, hotel.nom)}" target="_blank" title="Voir l'itinéraire vers ${hotel.nom}" class="place-link">📌 Itinéraire</a>` : '';
                 
                 // Ajouter une classe spéciale pour l'hôtel de Kyoto non choisi
                 const isUndecided = hotel.nom.includes("à déterminer");
@@ -2262,26 +2177,16 @@
         // Fonctions pour la sauvegarde/chargement de la sélection du jour
         function saveDaySelection(index) {
             localStorage.setItem('lastSelectedDay', index);
-            currentDayIndex = index;
-            updateNavigationArrows();
         }
 
         function loadDaySelection() {
             const lastIndex = localStorage.getItem('lastSelectedDay');
             if (lastIndex !== null) {
-                // Si une sélection existe dans le localStorage, l'utiliser
                 const dayDropdown = document.getElementById('day-dropdown');
                 dayDropdown.value = lastIndex;
                 if (parseInt(lastIndex) >= 0) {
                     showDayDetails(parseInt(lastIndex));
                 }
-            } else {
-                // Sinon, trouver le jour le plus proche de la date actuelle
-                const closestIndex = findClosestDayIndex();
-                const dayDropdown = document.getElementById('day-dropdown');
-                dayDropdown.value = closestIndex;
-                saveDaySelection(closestIndex);
-                showDayDetails(closestIndex);
             }
         }
     </script>
