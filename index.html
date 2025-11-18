@@ -714,6 +714,22 @@
             margin-top: 2rem;
         }
         
+        .loading-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
@@ -905,7 +921,7 @@
             <!-- Page Convertisseur -->
             <div class="page" id="convertisseur-page">
                 <h2 class="page-title">Convertisseur de Devises</h2>
-                <p class="page-subtitle">Convertissez facilement entre les devises</p>
+                <p class="page-subtitle">Convertissez facilement entre les devises avec des taux mis à jour quotidiennement</p>
                 
                 <div class="converter-container">
                     <div class="converter-form">
@@ -936,19 +952,26 @@
                     
                     <div class="converter-rates">
                         <div class="rate-item">
-                            <strong>1 EUR = <span id="rate-eur-jpy">160.50</span> JPY</strong>
+                            <strong>1 EUR = <span id="rate-eur-jpy">--.--</span> JPY</strong>
                         </div>
                         <div class="rate-item">
-                            <strong>1 EUR = <span id="rate-eur-php">60.25</span> PHP</strong>
+                            <strong>1 EUR = <span id="rate-eur-php">--.--</span> PHP</strong>
+                        </div>
+                        <div class="rate-item">
+                            <strong>1 JPY = <span id="rate-jpy-eur">--.--</span> EUR</strong>
+                        </div>
+                        <div class="rate-item">
+                            <strong>1 PHP = <span id="rate-php-eur">--.--</span> EUR</strong>
                         </div>
                     </div>
                     
                     <button class="converter-update" id="update-rates" style="display: block; margin: 1rem auto 0; padding: 0.5rem 1rem; background: var(--secondary); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Actualiser les taux
+                        <span id="update-text">Actualiser les taux</span>
+                        <span id="update-loading" class="loading-indicator" style="display: none;"></span>
                     </button>
                     
                     <p style="margin-top: 1rem; font-size: 0.9rem; color: #666; text-align: center;">
-                        Dernière mise à jour : <span id="last-update">...</span>
+                        Dernière mise à jour : <span id="last-update">Chargement...</span>
                     </p>
                 </div>
                 
@@ -1563,13 +1586,16 @@
             ]
         };
 
-        // Données pour le convertisseur de devises
+        // Données pour le convertisseur de devises - initialisées avec des valeurs par défaut
         const currencyData = {
             rates: {
                 EUR_JPY: 160.50,
-                EUR_PHP: 60.25
+                JPY_EUR: 0.00623,
+                EUR_PHP: 60.25,
+                PHP_EUR: 0.0166
             },
-            lastUpdate: new Date().toLocaleDateString('fr-FR')
+            lastUpdate: new Date().toLocaleDateString('fr-FR'),
+            googleSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLLj3YWEjnNtTwjxM_6CZCB354sMQFQNaW0JkldsHsr-NFn7nHXQ6oxM73bUuuEbPMxTftpnkHb7fy/pub?gid=0&single=true&output=csv'
         };
 
         // Variables globales
@@ -2083,10 +2109,71 @@
             hotelServicesBody.innerHTML = html;
         }
 
+        // Fonction pour récupérer les taux de change depuis Google Sheets
+        async function fetchExchangeRates() {
+            const updateButton = document.getElementById('update-rates');
+            const updateText = document.getElementById('update-text');
+            const updateLoading = document.getElementById('update-loading');
+            
+            // Afficher l'indicateur de chargement
+            updateText.textContent = 'Mise à jour...';
+            updateLoading.style.display = 'inline-block';
+            updateButton.disabled = true;
+            
+            try {
+                const response = await fetch(currencyData.googleSheetUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
+                const csvData = await response.text();
+                const lines = csvData.split('\n');
+                
+                // Les taux sont organisés comme suit dans votre Google Sheets:
+                // B1: EUR/JPY, B2: JPY/EUR, B3: EUR/PHP, B4: PHP/EUR
+                if (lines.length >= 4) {
+                    // Extraire les valeurs (supprimer les guillemets et espaces)
+                    const eurJpy = parseFloat(lines[0].split(',')[1].replace(/"/g, '').trim());
+                    const jpyEur = parseFloat(lines[1].split(',')[1].replace(/"/g, '').trim());
+                    const eurPhp = parseFloat(lines[2].split(',')[1].replace(/"/g, '').trim());
+                    const phpEur = parseFloat(lines[3].split(',')[1].replace(/"/g, '').trim());
+                    
+                    // Vérifier que les valeurs sont valides
+                    if (!isNaN(eurJpy) && !isNaN(jpyEur) && !isNaN(eurPhp) && !isNaN(phpEur)) {
+                        currencyData.rates.EUR_JPY = eurJpy;
+                        currencyData.rates.JPY_EUR = jpyEur;
+                        currencyData.rates.EUR_PHP = eurPhp;
+                        currencyData.rates.PHP_EUR = phpEur;
+                        currencyData.lastUpdate = new Date().toLocaleString('fr-FR');
+                        
+                        // Mettre à jour l'affichage
+                        updateCurrencyDisplay();
+                        convertCurrency();
+                        
+                        console.log('Taux de change mis à jour avec succès:', currencyData.rates);
+                    } else {
+                        throw new Error('Données de taux invalides dans le CSV');
+                    }
+                } else {
+                    throw new Error('Format CSV invalide - nombre de lignes insuffisant');
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors de la récupération des taux de change:', error);
+                alert('Erreur lors de la mise à jour des taux. Vérifiez votre connexion Internet.');
+            } finally {
+                // Masquer l'indicateur de chargement
+                updateText.textContent = 'Actualiser les taux';
+                updateLoading.style.display = 'none';
+                updateButton.disabled = false;
+            }
+        }
+
         // Fonction pour initialiser le convertisseur de devises
         function initializeCurrencyConverter() {
-            // Mettre à jour l'affichage des taux
-            updateCurrencyDisplay();
+            // Récupérer les taux initiaux
+            fetchExchangeRates();
             
             // Ajouter les écouteurs d'événements pour les champs de saisie
             document.getElementById('converter-amount').addEventListener('input', convertCurrency);
@@ -2097,7 +2184,7 @@
             document.getElementById('converter-swap').addEventListener('click', swapCurrencies);
             
             // Ajouter l'écouteur pour le bouton de mise à jour
-            document.getElementById('update-rates').addEventListener('click', fetchLatestRates);
+            document.getElementById('update-rates').addEventListener('click', fetchExchangeRates);
             
             // Convertir la valeur initiale
             convertCurrency();
@@ -2120,9 +2207,9 @@
             } else if (from === 'EUR' && to === 'PHP') {
                 rate = currencyData.rates.EUR_PHP;
             } else if (from === 'JPY' && to === 'EUR') {
-                rate = 1 / currencyData.rates.EUR_JPY;
+                rate = currencyData.rates.JPY_EUR;
             } else if (from === 'PHP' && to === 'EUR') {
-                rate = 1 / currencyData.rates.EUR_PHP;
+                rate = currencyData.rates.PHP_EUR;
             } else if (from === 'JPY' && to === 'PHP') {
                 rate = currencyData.rates.EUR_PHP / currencyData.rates.EUR_JPY;
             } else if (from === 'PHP' && to === 'JPY') {
@@ -2149,29 +2236,9 @@
         function updateCurrencyDisplay() {
             document.getElementById('rate-eur-jpy').textContent = currencyData.rates.EUR_JPY.toFixed(2);
             document.getElementById('rate-eur-php').textContent = currencyData.rates.EUR_PHP.toFixed(2);
+            document.getElementById('rate-jpy-eur').textContent = currencyData.rates.JPY_EUR.toFixed(6);
+            document.getElementById('rate-php-eur').textContent = currencyData.rates.PHP_EUR.toFixed(6);
             document.getElementById('last-update').textContent = currencyData.lastUpdate;
-        }
-
-        // Fonction pour récupérer les derniers taux de change (simulé)
-        function fetchLatestRates() {
-            // En situation réelle, on appellerait une API ici
-            // Pour l'exemple, on simule une mise à jour avec de petites variations
-            
-            const variation = 0.02; // 2% de variation
-            
-            currencyData.rates.EUR_JPY *= (1 + (Math.random() * variation * 2 - variation));
-            currencyData.rates.EUR_PHP *= (1 + (Math.random() * variation * 2 - variation));
-            
-            currencyData.rates.EUR_JPY = parseFloat(currencyData.rates.EUR_JPY.toFixed(2));
-            currencyData.rates.EUR_PHP = parseFloat(currencyData.rates.EUR_PHP.toFixed(2));
-            
-            currencyData.lastUpdate = new Date().toLocaleDateString('fr-FR');
-            
-            updateCurrencyDisplay();
-            convertCurrency();
-            
-            // Afficher un message de confirmation
-            alert('Taux de change actualisés avec succès!');
         }
 
         // Fonctions pour la sauvegarde/chargement de la sélection du jour
