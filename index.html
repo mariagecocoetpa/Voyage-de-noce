@@ -3,2258 +3,1095 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lune de Miel Japon & Philippines</title>
+    <title>Lune de Miel - Japon & Philippines 2026</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+    
+    <!-- Leaflet CSS & FontAwesome -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <meta name="theme-color" content="#e91e63">
+
     <style>
+        /* --- DESIGN SYSTEM --- */
         :root {
             --primary: #e91e63;
             --secondary: #2196f3;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --success: #4caf50;
             --japan: #bc002d;
             --philippines: #0038a8;
+            --success: #4caf50;
+            --suggestion: #ff9800;
+            --text: #333;
+            --bg: #f8f9fa;
+            --gradient-jp-ph: linear-gradient(135deg, var(--japan) 0%, var(--philippines) 100%);
+            --radius: 12px;
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-main); background: var(--bg); color: var(--text); overflow-x: hidden; padding-bottom: 80px; }
+        
+        /* --- LANDING PAGE --- */
+        #landing-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: var(--gradient-jp-ph);
+            z-index: 2000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: white;
+            text-align: center; transition: transform 0.5s ease-in-out;
+        }
+        .btn-enter {
+            padding: 15px 40px; background: white; color: var(--philippines);
+            border: none; border-radius: 30px; font-size: 1.1rem; font-weight: bold;
+            cursor: pointer; margin-top: 30px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn-enter:active { transform: scale(0.95); }
+
+        /* COUNTDOWN */
+        .countdown-container { display: flex; gap: 15px; margin-top: 20px; }
+        .countdown-box {
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
+            padding: 15px; border-radius: 10px; min-width: 80px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .countdown-number { font-size: 2rem; font-weight: bold; display: block; line-height: 1; }
+        .countdown-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+        
+        /* --- APP LAYOUT --- */
+        #app-interface { display: none; opacity: 0; transition: opacity 0.5s; }
+        
+        header {
+            position: sticky; top: 0; z-index: 1000;
+            background: var(--gradient-jp-ph); color: white;
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        #sidebar {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100vh;
+            background: white; z-index: 1500; transition: left 0.3s ease;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1); padding-top: 60px;
+        }
+        #sidebar.active { left: 0; }
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(0,0,0,0.5); z-index: 1400; display: none;
+        }
+        .nav-link {
+            display: flex; align-items: center; padding: 15px 25px;
+            color: var(--text); text-decoration: none; border-bottom: 1px solid #eee;
         }
         
-        body {
-            background-color: #f5f5f5;
-            color: var(--dark);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
+        .section { display: none; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .section.active { display: block; animation: fadeIn 0.4s; }
         
-        /* Page d'accueil */
-        #home-page {
-            height: 100vh;
-            background: linear-gradient(135deg, var(--japan) 0%, var(--philippines) 100%);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 2rem;
-            position: relative;
+        /* --- PLANNING --- */
+        .day-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; margin-top: 20px;
         }
-        
-        .home-content {
-            max-width: 800px;
-            z-index: 2;
+        .day-card {
+            background: white; border-radius: var(--radius); overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out; 
         }
+        .day-header { padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .bg-jp { background: var(--japan); }
+        .bg-ph { background: var(--philippines); }
+        .bg-intl { background: #607d8b; }
         
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        /* SWIPE ANIMATIONS */
+        .slide-in-right { animation: slideInRight 0.3s forwards; }
+        .slide-in-left { animation: slideInLeft 0.3s forwards; }
+        @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideInLeft { from { transform: translateX(-50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* COMPONENTS */
+        .challenge-card {
+            margin: 20px; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white; border-radius: var(--radius); overflow: hidden;
         }
+        .challenge-header { padding: 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .challenge-body { padding: 0 15px 15px; display: none; }
+        .challenge-body.open { display: block; }
+        .challenge-card.completed { background: var(--success); }
         
-        .subtitle {
-            font-size: 1.5rem;
-            opacity: 0.9;
-            margin-bottom: 2rem;
-        }
-        
-        .love-quote {
-            font-size: 2rem;
-            font-style: italic;
-            margin: 2rem 0;
-            color: rgba(255,255,255,0.9);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-        }
-        
-        /* Compte à rebours */
-        .countdown {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
-            margin: 2rem auto;
-            max-width: 600px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .countdown-title {
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            opacity: 0.9;
-        }
-        
-        .countdown-timer {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .countdown-item {
-            text-align: center;
-            min-width: 100px;
-        }
-        
-        .countdown-circle {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin: 0 auto 0.5rem;
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-        
-        .countdown-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            text-transform: uppercase;
-        }
-        
-        .enter-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid rgba(255,255,255,0.5);
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 2rem;
-            backdrop-filter: blur(10px);
-        }
-        
-        .enter-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-3px);
-        }
-        
-        /* Pages de contenu */
-        #content-pages {
-            display: none;
-            min-height: 100vh;
-        }
-        
-        /* Navigation */
-        .nav-header {
-            background: linear-gradient(135deg, var(--japan) 0%, var(--philippines) 100%);
-            color: white;
-            padding: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .nav-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .menu-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            backdrop-filter: blur(10px);
-            transition: background 0.3s ease;
-        }
-        
-        .menu-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .nav-menu {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100vh;
-            background: white;
-            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
-            transition: right 0.3s ease;
-            z-index: 1000;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-        
-        .nav-menu.active {
-            right: 0;
-        }
-        
-        .menu-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .close-menu {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--dark);
-        }
-        
-        .menu-links {
-            list-style: none;
-        }
-        
-        .menu-links li {
-            margin-bottom: 1rem;
-        }
-        
-        .menu-link {
-            display: block;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            text-decoration: none;
-            color: var(--dark);
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-        
-        .menu-link:hover, .menu-link.active {
-            background: var(--primary);
-            color: white;
-            border-left-color: var(--secondary);
-        }
-        
-        .back-home {
-            display: block;
-            margin-top: 2rem;
-            padding: 1rem;
-            background: var(--secondary);
-            color: white;
-            text-align: center;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background 0.3s ease;
-        }
-        
-        .back-home:hover {
-            background: #1976d2;
-        }
-        
-        /* Contenu principal */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        
-        .page {
-            display: none;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        .page-title {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-            text-align: center;
-        }
-        
-        .page-subtitle {
-            font-size: 1.2rem;
-            color: #666;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        /* Styles communs aux pages */
-        .dropdown-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 2rem;
-        }
-        
-        .day-dropdown, .city-dropdown {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            background-color: white;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.5rem;
-            padding-right: 3rem;
-        }
-        
-        .day-dropdown:focus, .city-dropdown:focus {
-            outline: none;
-            border-color: var(--secondary);
-        }
-        
-        .day-details, .places-container {
-            background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-        }
-        
-        .day-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .date {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        
-        .location {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #f0f7ff;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-weight: 600;
-            color: var(--secondary);
-        }
-        
-        .location a {
-            color: var(--secondary);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .location a:hover {
-            text-decoration: underline;
-        }
-        
-        .activities {
-            margin-bottom: 2rem;
-        }
-        
+        .timeline { padding: 0 20px 20px; }
         .activity {
-            display: flex;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #f0f0f0;
+            border-left: 2px solid #ddd; padding-left: 20px; margin-bottom: 20px; position: relative;
         }
+        .activity::before {
+            content: ''; width: 10px; height: 10px; background: var(--primary);
+            border-radius: 50%; position: absolute; left: -6px; top: 5px;
+        }
+        /* Liens Map */
+        .map-link { text-decoration: none; color: inherit; transition: color 0.2s; }
+        .map-link:hover { color: var(--secondary); }
+        .map-icon-small { color: var(--secondary); font-size: 0.8rem; margin-left: 5px; }
+
+        .hotel-card {
+            background: #fff9c4; margin: 20px; padding: 15px;
+            border-radius: var(--radius); border-left: 5px solid #fbc02d;
+        }
+        .hotel-details { margin-top: 10px; font-size: 0.9rem; color: #555; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px; }
+        .hotel-badge { display: inline-block; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-size: 0.8rem; }
         
-        .activity:last-child {
-            margin-bottom: 0;
-            border-bottom: none;
-        }
+        #map-container { height: 60vh; border-radius: var(--radius); margin-top: 20px; }
         
-        .time {
-            min-width: 100px;
-            font-weight: 600;
-            color: var(--dark);
+        /* Custom Map Markers */
+        .custom-div-icon { background: transparent; border: none; }
+        .marker-pin {
+            width: 30px; height: 30px; border-radius: 50% 50% 50% 0;
+            position: absolute; transform: rotate(-45deg);
+            left: 50%; top: 50%; margin: -15px 0 0 -15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
         }
+        .marker-pin::after { content: ''; width: 20px; height: 20px; margin: 5px 0 0 5px; background: #fff; position: absolute; border-radius: 50%; }
+        .marker-pin i { transform: rotate(45deg); z-index: 10; font-size: 14px; color: #333; }
         
-        .activity-details {
-            flex: 1;
+        /* AI MODAL STYLES */
+        .ai-fab {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white; border: none; font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s;
         }
+        .ai-fab:hover { transform: scale(1.1); }
+
+        .ai-modal {
+            position: fixed; bottom: 90px; right: 20px; left: 20px;
+            background: white; border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 1599; padding: 20px; display: none; flex-direction: column;
+            max-width: 400px; margin-left: auto; border: 1px solid rgba(0,0,0,0.05);
+            animation: slideUp 0.3s ease-out;
+        }
+        .ai-modal.active { display: flex; }
         
-        .activity-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
+        .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .ai-title { font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+
+        .ai-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .ai-btn {
+            padding: 10px; border: 1px solid #eee; border-radius: 8px;
+            background: #f8f9fa; cursor: pointer; font-size: 0.85rem;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            transition: all 0.2s; text-align: center;
         }
+        .ai-btn:hover { background: #e3f2fd; border-color: var(--secondary); }
+        .ai-btn i { color: var(--secondary); font-size: 1.2rem; }
+
+        .ai-chat-box { height: 200px; overflow-y: auto; background: #f9f9f9; border-radius: 8px; padding: 10px; margin-bottom: 10px; border: 1px solid #eee; }
         
-        .activity-desc {
-            color: #666;
-        }
+        .ai-input-group { display: flex; gap: 10px; }
+        .ai-input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        .ai-send { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+
+        .chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 0.9rem; }
+        .chat-msg.user { background: var(--secondary); color: white; align-self: flex-end; }
+        .chat-msg.ai { background: white; border: 1px solid #ddd; align-self: flex-start; }
+        .typing-dots::after { content: ' . . .'; animation: dots 1.5s infinite; }
         
-        .place-link {
-            color: var(--secondary);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border-bottom: 1px dotted var(--secondary);
-        }
-        
-        .place-link:hover {
-            color: var(--primary);
-            text-decoration: none;
-            border-bottom: 1px solid var(--primary);
-        }
-        
-        .nearby-places {
-            background: #f9f9f9;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-        }
-        
-        .nearby-title {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .places-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
-        }
-        
-        .place-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-        }
-        
-        .place-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .place-name {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-        }
-        
-        .place-name a {
-            color: var(--dark);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .place-name a:hover {
-            color: var(--secondary);
-            text-decoration: underline;
-        }
-        
-        .place-desc {
-            font-size: 0.9rem;
-            color: #666;
-        }
-        
-        .country-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .japan-badge {
-            background-color: rgba(188, 0, 45, 0.1);
-            color: var(--japan);
-        }
-        
-        .philippines-badge {
-            background-color: rgba(0, 56, 168, 0.1);
-            color: var(--philippines);
-        }
-        
-        .hotel-info {
-            background: #fff8e1;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1.5rem;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .hotel-name {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        .map-icon {
-            font-size: 1.2rem;
-        }
-        
-        /* Styles pour la carte */
-        #map {
-            height: 600px;
-            width: 100%;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-        
-        .map-controls {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .map-btn {
-            padding: 0.5rem 1rem;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .map-btn.active {
-            background: var(--secondary);
-            color: white;
-            border-color: var(--secondary);
-        }
-        
-        .map-btn:hover {
-            background: #f0f0f0;
-        }
-        
-        /* Styles pour le tableau des services hôteliers */
-        .hotel-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        
-        .hotel-table th, .hotel-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .hotel-table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
-        .hotel-table tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .service-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            background: #e9ecef;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .room-type {
-            font-style: italic;
-            color: #666;
-            margin-top: 0.25rem;
-            font-size: 0.9rem;
-        }
-        
-        /* Légende de la carte */
-        #map-legend {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-        
-        /* Styles pour le convertisseur de devises */
-        .converter-container {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .converter-form {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 1rem;
-            align-items: end;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        
-        .converter-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .converter-label {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-        }
-        
-        .converter-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-        
-        .converter-select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            font-size: 1rem;
-            background-color: white;
-        }
-        
-        .converter-swap {
-            background: var(--secondary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            margin-bottom: 0.5rem;
-        }
-        
-        .converter-swap:hover {
-            background: #1976d2;
-        }
-        
-        .converter-result {
-            background: white;
-            padding: 1rem;
-            border-radius: 4px;
-            font-weight: 600;
-            color: var(--success);
-            text-align: center;
-            font-size: 1.2rem;
-            margin-top: 1rem;
-        }
-        
-        .converter-rates {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .rate-item {
-            text-align: center;
-            font-size: 0.9rem;
-            color: #666;
-        }
-        
-        .warning-badge {
-            background: #ffc107;
-            color: #856404;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .undecided-hotel {
-            background: #fff3cd;
-        }
-        
-        .undecided-hotel:hover {
-            background: #ffeaa7;
-        }
-        
-        .budget-tips {
-            background: #e7f3ff;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 2rem;
-        }
-        
-        .loading-indicator {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid var(--secondary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .subtitle {
-                font-size: 1.2rem;
-            }
-            
-            .love-quote {
-                font-size: 1.5rem;
-            }
-            
-            .countdown-timer {
-                gap: 0.5rem;
-            }
-            
-            .countdown-circle {
-                width: 60px;
-                height: 60px;
-                font-size: 1.2rem;
-            }
-            
-            .countdown-item {
-                min-width: 70px;
-            }
-            
-            .nav-menu {
-                width: 100%;
-                right: -100%;
-            }
-            
-            .day-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-            
-            .places-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .converter-form {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-            }
-            
-            .converter-swap {
-                order: 3;
-                margin: 0.5rem auto;
-            }
-            
-            .map-controls {
-                flex-direction: column;
-            }
-            
-            #map-legend {
-                flex-direction: column;
-            }
-        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes dots { 0% { content: ' .'; } 33% { content: ' . .'; } 66% { content: ' . . .'; } }
     </style>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
-    <!-- Page d'accueil -->
-    <section id="home-page">
-        <div class="home-content">
-            <h1>Lune de Miel Japon & Philippines</h1>
-            <p class="subtitle">20 Février - 14 Mars 2026</p>
-            
-            <div class="love-quote">All you need is love... powder and sun.</div>
-            
-            <!-- Compte à rebours -->
-            <div class="countdown">
-                <div class="countdown-title">Départ dans :</div>
-                <div class="countdown-timer">
-                    <div class="countdown-item">
-                        <div class="countdown-circle" id="countdown-days">00</div>
-                        <div class="countdown-label">Jours</div>
-                    </div>
-                    <div class="countdown-item">
-                        <div class="countdown-circle" id="countdown-hours">00</div>
-                        <div class="countdown-label">Heures</div>
-                    </div>
-                    <div class="countdown-item">
-                        <div class="countdown-circle" id="countdown-minutes">00</div>
-                        <div class="countdown-label">Minutes</div>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="enter-btn" id="enter-site">Accéder au planning</button>
-        </div>
-    </section>
-    
-    <!-- Pages de contenu -->
-    <section id="content-pages">
-        <!-- Navigation -->
-        <header class="nav-header">
-            <div class="nav-container">
-                <div class="nav-title">Notre Lune de Miel</div>
-                <button class="menu-btn" id="menu-toggle">Menu</button>
-            </div>
-        </header>
-        
-        <!-- Menu de navigation -->
-        <nav class="nav-menu" id="nav-menu">
-            <div class="menu-header">
-                <h3>Navigation</h3>
-                <button class="close-menu" id="close-menu">×</button>
-            </div>
-            <ul class="menu-links">
-                <li><a href="#" class="menu-link active" data-page="planning">Planning Journalier</a></li>
-                <li><a href="#" class="menu-link" data-page="points-interet">Points d'Intérêt</a></li>
-                <li><a href="#" class="menu-link" data-page="carte">Carte Interactive</a></li>
-                <li><a href="#" class="menu-link" data-page="convertisseur">Convertisseur</a></li>
-                <li><a href="#" class="menu-link" data-page="hotels">Services Hôteliers</a></li>
-            </ul>
-            <a href="#" class="back-home" id="back-home">Retour à l'accueil</a>
-        </nav>
-        
-        <!-- Contenu principal -->
-        <main class="container">
-            <!-- Page Planning -->
-            <div class="page active" id="planning-page">
-                <h2 class="page-title">Planning Journalier</h2>
-                <p class="page-subtitle">Découvrez le détail de chaque journée de votre voyage</p>
-                
-                <div class="dropdown-container">
-                    <select class="day-dropdown" id="day-dropdown">
-                        <option value="">Sélectionnez un jour...</option>
-                        <!-- Les options seront générées par JavaScript -->
-                    </select>
-                </div>
-                
-                <div class="day-details" id="day-details">
-                    <div style="text-align: center; padding: 2rem; color: #666;">
-                        <p>Sélectionnez un jour dans le menu déroulant pour voir les détails</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Page Points d'Intérêt -->
-            <div class="page" id="points-interet-page">
-                <h2 class="page-title">Points d'Intérêt</h2>
-                <p class="page-subtitle">Découvrez les lieux à visiter pendant votre voyage</p>
-                
-                <div class="dropdown-container">
-                    <select class="city-dropdown" id="city-dropdown">
-                        <option value="all">Toutes les villes</option>
-                        <!-- Les options seront générées par JavaScript -->
-                    </select>
-                </div>
-                
-                <div class="places-container" id="points-interet-list">
-                    <!-- Les points d'intérêt seront générés par JavaScript -->
-                </div>
-            </div>
-            
-            <!-- Page Carte -->
-            <div class="page" id="carte-page">
-                <h2 class="page-title">Carte Interactive</h2>
-                <p class="page-subtitle">Visualisez votre itinéraire sur la carte</p>
-                
-                <div class="map-controls">
-                    <button class="map-btn active" data-layer="activities">Activités Planning</button>
-                    <button class="map-btn" data-layer="interest">Points d'Intérêt</button>
-                    <button class="map-btn" data-layer="hotels">Hôtels</button>
-                    <button class="map-btn" data-layer="all">Tout afficher</button>
-                </div>
-                
-                <div id="map"></div>
-                <div id="map-legend">
-                    <div class="legend-item">
-                        <span class="legend-color" style="background-color: #e91e63;"></span>
-                        <span>Activités du planning</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background-color: #4caf50;"></span>
-                        <span>Points d'intérêt</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background-color: #2196f3;"></span>
-                        <span>Hébergements</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Page Convertisseur -->
-            <div class="page" id="convertisseur-page">
-                <h2 class="page-title">Convertisseur de Devises</h2>
-                <p class="page-subtitle">Convertissez facilement entre les devises avec des taux mis à jour quotidiennement</p>
-                
-                <div class="converter-container">
-                    <div class="converter-form">
-                        <div class="converter-group">
-                            <label class="converter-label">De</label>
-                            <input type="number" class="converter-input" id="converter-amount" placeholder="Montant" value="1" min="0" step="0.01">
-                            <select class="converter-select" id="converter-from">
-                                <option value="EUR">EUR - Euro</option>
-                                <option value="JPY">JPY - Yen Japonais</option>
-                                <option value="PHP">PHP - Peso Philippin</option>
-                            </select>
-                        </div>
-                        
-                        <button class="converter-swap" id="converter-swap" title="Inverser les devises">⇄</button>
-                        
-                        <div class="converter-group">
-                            <label class="converter-label">Vers</label>
-                            <div class="converter-input" style="background: #f8f9fa; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                                <span id="converter-result-amount">1.00</span>
-                            </div>
-                            <select class="converter-select" id="converter-to">
-                                <option value="JPY">JPY - Yen Japonais</option>
-                                <option value="PHP">PHP - Peso Philippin</option>
-                                <option value="EUR">EUR - Euro</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="converter-rates">
-                        <div class="rate-item">
-                            <strong>1 EUR = <span id="rate-eur-jpy">--.--</span> JPY</strong>
-                        </div>
-                        <div class="rate-item">
-                            <strong>1 EUR = <span id="rate-eur-php">--.--</span> PHP</strong>
-                        </div>
-                        <div class="rate-item">
-                            <strong>1 JPY = <span id="rate-jpy-eur">--.--</span> EUR</strong>
-                        </div>
-                        <div class="rate-item">
-                            <strong>1 PHP = <span id="rate-php-eur">--.--</span> EUR</strong>
-                        </div>
-                    </div>
-                    
-                    <button class="converter-update" id="update-rates" style="display: block; margin: 1rem auto 0; padding: 0.5rem 1rem; background: var(--secondary); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        <span id="update-text">Actualiser les taux</span>
-                        <span id="update-loading" class="loading-indicator" style="display: none;"></span>
-                    </button>
-                    
-                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #666; text-align: center;">
-                        Dernière mise à jour : <span id="last-update">Chargement...</span>
-                    </p>
-                </div>
-                
-                <div class="budget-tips">
-                    <h3 style="color: var(--secondary); margin-bottom: 0.5rem;">💡 Conseils Budget</h3>
-                    <ul style="color: #666;">
-                        <li><strong>Japon</strong> : 100-150€ par personne/jour (hôtel, repas, transports)</li>
-                        <li><strong>Philippines</strong> : 50-80€ par personne/jour</li>
-                        <li><strong>Activités</strong> : Ski (50-80€/jour), Plongée PADI (200-300€)</li>
-                        <li>Prévoir environ 20% de budget supplémentaire pour les imprévus</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Page Hôtels -->
-            <div class="page" id="hotels-page">
-                <h2 class="page-title">Services et Équipements des Hôtels</h2>
-                <p class="page-subtitle">Retrouvez tous les services proposés par vos hébergements</p>
-                
-                <table class="hotel-table">
-                    <thead>
-                        <tr>
-                            <th>Hôtel</th>
-                            <th>Ville</th>
-                            <th>Type de chambre</th>
-                            <th>Services principaux</th>
-                            <th>Équipements</th>
-                            <th>Check-in / Check-out</th>
-                        </tr>
-                    </thead>
-                    <tbody id="hotel-services-body">
-                        <!-- Les services hôteliers seront générés par JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </main>
-    </section>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- SCREEN D'ACCUEIL -->
+    <div id="landing-page">
+        <div class="landing-content">
+            <h1>Lune de Miel</h1>
+            <p>Japon & Philippines</p>
+            <p style="font-size:0.9rem; opacity:0.8; margin-top:5px;">20 Fév - 14 Mars 2026</p>
+            <div class="countdown-container" id="countdown-display">
+                <div class="countdown-box"><span class="countdown-number" id="cd-days">00</span><span class="countdown-label">Jours</span></div>
+                <div class="countdown-box"><span class="countdown-number" id="cd-hours">00</span><span class="countdown-label">Heures</span></div>
+                <div class="countdown-box"><span class="countdown-number" id="cd-minutes">00</span><span class="countdown-label">Min</span></div>
+            </div>
+            <button class="btn-enter" onclick="enterApp()">Accéder au planning</button>
+        </div>
+    </div>
+
+    <!-- INTERFACE PRINCIPALE -->
+    <div id="app-interface">
+        <header>
+            <button onclick="toggleSidebar()" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;"><i class="fas fa-bars"></i></button>
+            <div style="font-weight: bold;">Voyage de Noces</div>
+            <div id="header-date" style="font-size:0.9rem;">J-0</div>
+        </header>
+
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <nav id="sidebar">
+            <button onclick="toggleSidebar()" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+            <a href="#" class="nav-link" onclick="navigate('planner')"><i class="fas fa-calendar-alt"></i> Planning Journalier</a>
+            <a href="#" class="nav-link" onclick="navigate('map')"><i class="fas fa-globe-asia"></i> Carte Interactive</a>
+            <a href="#" class="nav-link" onclick="navigate('hotels')"><i class="fas fa-hotel"></i> Hébergements</a>
+            <a href="#" class="nav-link" onclick="navigate('converter')"><i class="fas fa-exchange-alt"></i> Convertisseur</a>
+        </nav>
+
+        <!-- 1. PLANNING -->
+        <section id="planner" class="section active">
+            <div class="day-nav">
+                <button onclick="changeDay(-1)" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">◀</button>
+                <select id="day-select" onchange="selectDay(this.value)" style="padding:8px; border-radius:20px; border:1px solid #ccc;"></select>
+                <button onclick="changeDay(1)" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">▶</button>
+            </div>
+            <div id="day-content"></div>
+            <p style="text-align:center; color:#999; font-size:0.8rem; margin-top:10px;">
+                <i class="fas fa-hand-pointer"></i> Glissez gauche/droite pour changer de jour
+            </p>
+        </section>
+
+        <!-- 2. CARTE -->
+        <section id="map" class="section">
+            <h2>🗺️ Carte du Voyage</h2>
+            <div class="map-legend" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; font-size:0.8rem;">
+                <span style="display:flex; align-items:center;"><i class="fas fa-circle" style="color:var(--primary); margin-right:5px;"></i> Activités</span>
+                <span style="display:flex; align-items:center;"><i class="fas fa-circle" style="color:var(--secondary); margin-right:5px;"></i> Hôtels</span>
+                <span style="display:flex; align-items:center;"><i class="fas fa-circle" style="color:var(--suggestion); margin-right:5px;"></i> Idées</span>
+            </div>
+            <div id="map-container"></div>
+        </section>
+        
+        <!-- 3. HÔTELS -->
+        <section id="hotels" class="section">
+            <h2>🏨 Vos Hébergements</h2>
+            <div id="hotels-list"></div>
+        </section>
+
+        <!-- 4. CONVERTISSEUR -->
+        <section id="converter" class="section">
+            <h2>💱 Convertisseur</h2>
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); text-align:center;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <select id="curr-from" onchange="convertCurrency()" style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px; background:#f8f9fa;">
+                        <option value="EUR">EUR (€)</option>
+                        <option value="JPY">JPY (¥)</option>
+                        <option value="PHP">PHP (₱)</option>
+                    </select>
+                    <input type="number" id="amount-from" value="100" oninput="convertCurrency()" placeholder="Montant" style="flex:2; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:1.1rem;">
+                </div>
+                <button onclick="swapCurrency()" style="background:none; border:none; font-size:1.5rem; margin:15px 0; cursor:pointer; color:var(--primary); transition:transform 0.2s;">
+                    <i class="fas fa-exchange-alt" style="transform: rotate(90deg);"></i>
+                </button>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <select id="curr-to" onchange="convertCurrency()" style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px; background:#f8f9fa;">
+                        <option value="JPY">JPY (¥)</option>
+                        <option value="PHP">PHP (₱)</option>
+                        <option value="EUR">EUR (€)</option>
+                    </select>
+                    <div id="conversion-result" style="flex:2; font-size: 1.5rem; font-weight: bold; color: var(--primary); text-align:right;">---</div>
+                </div>
+                <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+                    <button onclick="updateRates()" id="btn-update-rates" style="background:var(--secondary); color:white; border:none; padding:10px 25px; border-radius:25px; cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:8px; margin:0 auto;">
+                        <i class="fas fa-sync-alt"></i> Actualiser les taux
+                    </button>
+                    <p id="rate-info" style="font-size:0.8rem; color:#999; margin-top:10px;">Taux indicatifs</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- AI MODAL -->
+    <button class="ai-fab" onclick="toggleAIModal()">✨</button>
+    <div class="ai-modal" id="aiModal">
+        <div class="ai-header">
+            <div class="ai-title">✨ Compagnon IA <span style="font-size:0.7rem; font-weight:normal; color:#666;" id="ai-context-badge"></span></div>
+            <button onclick="toggleAIModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">&times;</button>
+        </div>
+        <div class="ai-actions">
+            <button class="ai-btn" onclick="askGemini('Suggère une activité romantique courte et spontanée ici (à VilleActuelle).')">
+                <i class="fas fa-heart"></i> Idée Romantique
+            </button>
+            <button class="ai-btn" onclick="activateTranslatorMode()">
+                <i class="fas fa-language"></i> Traducteur
+            </button>
+            <button class="ai-btn" onclick="askGemini('Quelle est la spécialité culinaire incontournable à VilleActuelle ?')">
+                <i class="fas fa-utensils"></i> Gastronomie
+            </button>
+            <button class="ai-btn" onclick="askGemini('Donne-moi un conseil culturel important ou une erreur à éviter au/en PaysActuel.')">
+                <i class="fas fa-info-circle"></i> Culture
+            </button>
+        </div>
+        <div class="ai-chat-box" id="aiChatBox">
+            <div class="chat-msg ai">Bonjour ! Je suis votre guide pour ce voyage. Je sais que vous êtes à <b id="ai-location-name">Tokyo</b>. Comment puis-je vous aider ?</div>
+        </div>
+        <div class="ai-input-group">
+            <input type="text" id="aiUserInput" class="ai-input" placeholder="Posez une question...">
+            <button class="ai-send" onclick="handleUserSubmit()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Données du voyage avec le planning détaillé complet
+        /* --- CONFIG --- */
+        const apiKey = "AIzaSyCvGcDb4H7qrTRvbj6VPwVntllM5RtP-xc"; 
+        const DATE_DEPART = new Date('2026-02-20T18:50:00');
+        
+        // --- DONNÉES VOYAGE ---
         const voyageData = {
-            jours: [
+            days: [
                 {
-                    date: "2026-02-20",
-                    lieu: "Vol Paris → Istanbul",
-                    pays: "International",
-                    coordonnees: "",
-                    hotel: "Nuit à bord",
-                    activites: [
-                        { time: "18:50", title: "Départ de Paris CDG", description: "Vol TK1828 Paris → Istanbul" },
-                        { time: "23:30", title: "Nuit à bord", description: "Vol de nuit vers Istanbul" }
-                    ],
-                    pointsInteret: []
-                },
-                {
-                    date: "2026-02-21",
-                    lieu: "Tokyo",
-                    pays: "Japon",
-                    coordonnees: "35.6715,139.7630",
-                    hotel: "The B Ginza",
-                    activites: [
-                        { time: "00:30", title: "Arrivée Istanbul", description: "Escale à l'aéroport d'Istanbul" },
-                        { time: "02:30", title: "Décollage d'Istanbul", description: "Vol TK198 Istanbul → Tokyo" },
-                        { time: "19:45", title: "Arrivée à Tokyo Haneda", description: "Atterrissage à l'aéroport de Tokyo Haneda" },
-                        { time: "20:30", title: "Transfert vers l'hôtel", description: "Trajet vers The B Ginza", coordinates: "35.6715,139.7630", mapsLink: true },
-                        { time: "21:30", title: "Installation à l'hôtel", description: "Check-in et installation dans la chambre" },
-                        { time: "22:00", title: "Première découverte de Ginza", description: "Exploration nocturne du quartier de Ginza", coordinates: "35.6715,139.7630", mapsLink: true }
-                    ],
-                    pointsInteret: [
-                        { nom: "The B Ginza", description: "Hôtel situé dans le quartier chic de Ginza", coordonnees: "35.6715,139.7630", type: "hotel", mapsLink: true },
-                        { nom: "Ginza", description: "Quartier commerçant luxueux de Tokyo", coordonnees: "35.6715,139.7630", type: "shopping" },
-                        { nom: "Tsukiji Outer Market", description: "Marché aux poissons et cuisine de rue", coordonnees: "35.6655,139.7699", type: "food", mapsLink: true },
-                        { nom: "Hamarikyu Gardens", description: "Jardins japonais traditionnels avec maison de thé", coordonnees: "35.6602,139.7639", type: "nature", mapsLink: true }
+                    id: 1,
+                    date: new Date('2026-02-20'),
+                    country: 'International',
+                    location: 'Vol Paris → Istanbul',
+                    coords: [48.8566, 2.3522],
+                    hotel: { name: "Nuit à bord", room: "Vol TK1828/TK198", link: "#" },
+                    challenge: { title: "✈️ Premier envol", desc: "Photo coucher soleil avion", hint: "Hublot" },
+                    activities: [
+                        { time: "18:50", title: "Départ Paris CDG", desc: "Vol TK1828", coords: [49.0097, 2.5479] },
+                        { time: "23:30", title: "Nuit à bord", desc: "Vers Istanbul", coords: null }
                     ]
                 },
                 {
-                    date: "2026-02-22",
-                    lieu: "Tokyo",
-                    pays: "Japon",
-                    coordonnees: "35.7148,139.7967",
-                    hotel: "The B Ginza",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "09:00", title: "Temple Senso-ji à Asakusa", description: "Visite du plus ancien temple de Tokyo", coordinates: "35.7148,139.7967", mapsLink: true },
-                        { time: "12:00", title: "Déjeuner", description: "Repas à Asakusa" },
-                        { time: "13:30", title: "Parc Ueno et ses musées", description: "Découverte du parc et des musées", coordinates: "35.7148,139.7737", mapsLink: true },
-                        { time: "17:00", title: "Fin des visites", description: "Fin des activités programmées" },
-                        { time: "18:00", title: "Découverte du quartier d'Ueno", description: "Exploration du quartier et dîner", coordinates: "35.7148,139.7737", mapsLink: true },
-                        { time: "21:00", title: "Retour à l'hôtel", description: "Retour à The B Ginza", coordinates: "35.6715,139.7630", mapsLink: true }
+                    id: 2,
+                    date: new Date('2026-02-21'),
+                    country: 'Japon',
+                    location: 'Tokyo (Ginza)',
+                    coords: [35.6712, 139.7665],
+                    hotel: { name: "The B Ginza", room: "Chambre Double", link: "https://www.google.com/maps/search/?api=1&query=The+B+Ginza" },
+                    challenge: { title: "🏙️ Premiers pas à Ginza", desc: "Néons de Ginza", hint: "Buildings illuminés" },
+                    activities: [
+                        { time: "19:45", title: "Arrivée Haneda", desc: "Transfert hôtel", coords: [35.5494, 139.7798] },
+                        { time: "22:00", title: "Ginza Nocturne", desc: "Exploration", coords: [35.6712, 139.7665] }
                     ],
-                    pointsInteret: [
-                        { nom: "Temple Senso-ji", description: "Plus ancien temple bouddhiste de Tokyo", coordonnees: "35.7148,139.7967", type: "culture", mapsLink: true },
-                        { nom: "Nakamise-dori", description: "Rue commerçante traditionnelle menant au temple", coordonnees: "35.7115,139.7965", type: "shopping" },
-                        { nom: "Parc d'Ueno", description: "Grand parc avec musées, zoo et temples", coordonnees: "35.7148,139.7737", type: "nature", mapsLink: true },
-                        { nom: "Musée National de Tokyo", description: "Plus ancien et plus grand musée du Japon", coordonnees: "35.7188,139.7765", type: "culture", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Hibiya Park", desc: "Parc paisible", coords: [35.6736, 139.7564] }]
                 },
                 {
-                    date: "2026-02-23",
-                    lieu: "Tokyo",
-                    pays: "Japon",
-                    coordonnees: "35.6852,139.7528",
-                    hotel: "The B Ginza",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "09:30", title: "Jardins du Palais Impérial", description: "Visite des jardins extérieurs du Palais", coordinates: "35.6852,139.7528", mapsLink: true },
-                        { time: "12:30", title: "Déjeuner", description: "Repas à Marunouchi" },
-                        { time: "14:00", title: "TeamLab Planets", description: "Expérience artistique numérique immersive", coordinates: "35.6452,139.7906", mapsLink: true },
-                        { time: "16:30", title: "Fin de la visite", description: "Fin de l'expérience TeamLab" },
-                        { time: "17:30", title: "Transfert vers Odaiba", description: "Trajet vers l'île artificielle" },
-                        { time: "18:30", title: "Odaiba et vue sur la baie", description: "Découverte d'Odaiba et vue sur la baie de Tokyo", coordinates: "35.6252,139.7756", mapsLink: true },
-                        { time: "20:30", title: "Dîner", description: "Repas à Odaiba" },
-                        { time: "22:00", title: "Retour à l'hôtel", description: "Retour à The B Ginza", coordinates: "35.6715,139.7630", mapsLink: true }
+                    id: 3,
+                    date: new Date('2026-02-22'),
+                    country: 'Japon',
+                    location: 'Tokyo (Asakusa)',
+                    coords: [35.7148, 139.7967],
+                    hotel: { name: "The B Ginza", room: "Chambre Double", link: "https://www.google.com/maps/search/?api=1&query=The+B+Ginza" },
+                    challenge: { title: "⛩️ Temple emblématique", desc: "Temple Senso-ji", hint: "Tôt le matin" },
+                    activities: [
+                        { time: "09:00", title: "Temple Senso-ji", desc: "Asakusa", coords: [35.7148, 139.7967] },
+                        { time: "13:30", title: "Parc Ueno", desc: "Musées", coords: [35.7140, 139.7741] }
                     ],
-                    pointsInteret: [
-                        { nom: "Palais Impérial", description: "Résidence principale de l'Empereur du Japon", coordonnees: "35.6852,139.7528", type: "culture", mapsLink: true },
-                        { nom: "TeamLab Planets", description: "Expérience artistique numérique immersive", coordonnees: "35.6452,139.7906", type: "art", mapsLink: true },
-                        { nom: "Odaiba", description: "Île artificielle avec centres commerciaux et divertissements", coordonnees: "35.6252,139.7756", type: "entertainment", mapsLink: true },
-                        { nom: "Rainbow Bridge", description: "Pont illuminé offrant une vue magnifique sur Tokyo", coordonnees: "35.6362,139.7636", type: "viewpoint", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Ameyoko Market", desc: "Marché animé", coords: [35.7088, 139.7746] }]
                 },
                 {
-                    date: "2026-02-24",
-                    lieu: "Tokyo",
-                    pays: "Japon",
-                    coordonnees: "35.6751,139.7369",
-                    hotel: "The B Ginza",
-                    activites: [
-                        { time: "08:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "09:30", title: "Sanctuaire Hie-jinja", description: "Visite du sanctuaire aux torii rouges", coordinates: "35.6751,139.7369", mapsLink: true },
-                        { time: "11:30", title: "Transfert vers Ikebukuro", description: "Trajet vers le quartier d'Ikebukuro" },
-                        { time: "12:30", title: "Déjeuner", description: "Repas à Ikebukuro" },
-                        { time: "13:00", title: "Sunshine 60 Observatory", description: "Vue panoramique depuis l'observatoire", coordinates: "35.7289,139.7189", mapsLink: true },
-                        { time: "16:00", title: "Fin de la visite", description: "Fin de la visite de l'observatoire" },
-                        { time: "17:00", title: "Transfert vers Shinjuku", description: "Trajet vers le quartier de Shinjuku" },
-                        { time: "18:00", title: "Quartier de Shinjuku et ses néons", description: "Exploration du quartier et ses illuminations", coordinates: "35.6895,139.7009", mapsLink: true },
-                        { time: "20:00", title: "Dîner", description: "Repas à Shinjuku" },
-                        { time: "22:00", title: "Retour à l'hôtel", description: "Retour à The B Ginza", coordinates: "35.6715,139.7630", mapsLink: true }
+                    id: 4,
+                    date: new Date('2026-02-23'),
+                    country: 'Japon',
+                    location: 'Tokyo (Odaiba)',
+                    coords: [35.6284, 139.7775],
+                    hotel: { name: "The B Ginza", room: "Chambre Double", link: "https://www.google.com/maps/search/?api=1&query=The+B+Ginza" },
+                    challenge: { title: "👑 Jardins impériaux", desc: "Jardins du Palais", hint: "Pont en bois" },
+                    activities: [
+                        { time: "09:30", title: "Palais Impérial", desc: "Jardins", coords: [35.6852, 139.7528] },
+                        { time: "14:00", title: "TeamLab Planets", desc: "Art immersif", coords: [35.6442, 139.7954] },
+                        { time: "18:30", title: "Odaiba", desc: "Vue Baie", coords: [35.6284, 139.7775] }
                     ],
-                    pointsInteret: [
-                        { nom: "Sanctuaire Hie-jinja", description: "Sanctuaire shintoïste connu pour ses torii rouges", coordonnees: "35.6751,139.7369", type: "culture", mapsLink: true },
-                        { nom: "Ikebukuro", description: "Quartier commerçant et de divertissement", coordonnees: "35.7295,139.7109", type: "shopping", mapsLink: true },
-                        { nom: "Sunshine 60 Observatory", description: "Observatoire offrant une vue panoramique sur Tokyo", coordonnees: "35.7289,139.7189", type: "viewpoint", mapsLink: true },
-                        { nom: "Shinjuku", description: "Quartier d'affaires et de divertissement nocturne", coordonnees: "35.6895,139.7009", type: "entertainment", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Gundam Statue", desc: "Robot géant", coords: [35.6244, 139.7755] }]
                 },
                 {
-                    date: "2026-02-25",
-                    lieu: "Furano",
-                    pays: "Japon",
-                    coordonnees: "43.3421,142.3830",
-                    hotel: "Winery Hotel and Condominium Furano",
-                    activites: [
-                        { time: "07:00", title: "Petit-déjeuner et check-out", description: "Dernier repas à l'hôtel et départ" },
-                        { time: "08:00", title: "Transfert à l'aéroport", description: "Trajet vers l'aéroport de Tokyo Haneda" },
-                        { time: "09:30", title: "Enregistrement vol domestique", description: "Formalités d'enregistrement" },
-                        { time: "11:10", title: "Vol Tokyo → Asahikawa", description: "Décollage pour Asahikawa" },
-                        { time: "12:50", title: "Arrivée Asahikawa", description: "Atterrissage à l'aéroport d'Asahikawa" },
-                        { time: "13:30", title: "Récupération bagages et transfert", description: "Récupération des bagages et trajet vers Furano" },
-                        { time: "15:00", title: "Arrivée à l'hôtel", description: "Arrivée à Winery Hotel & Condominium", coordinates: "43.3421,142.3830", mapsLink: true },
-                        { time: "15:30", title: "Installation", description: "Check-in et installation dans la chambre" },
-                        { time: "16:30", title: "Location équipement ski", description: "Location du matériel de ski" },
-                        { time: "18:30", title: "Dîner", description: "Repas à l'hôtel" }
+                    id: 5,
+                    date: new Date('2026-02-24'),
+                    country: 'Japon',
+                    location: 'Tokyo (Shinjuku)',
+                    coords: [35.6917, 139.7040],
+                    hotel: { name: "The B Ginza", room: "Chambre Double", link: "https://www.google.com/maps/search/?api=1&query=The+B+Ginza" },
+                    challenge: { title: "🌃 Vue panoramique", desc: "Sunshine 60", hint: "Coucher soleil" },
+                    activities: [
+                        { time: "09:30", title: "Hie-jinja", desc: "Sanctuaire", coords: [35.6746, 139.7400] },
+                        { time: "13:00", title: "Sunshine 60", desc: "Observatoire", coords: [35.7295, 139.7180] },
+                        { time: "18:00", title: "Shinjuku", desc: "Néons", coords: [35.6917, 139.7040] }
                     ],
-                    pointsInteret: [
-                        { nom: "Winery Hotel and Condominium Furano", description: "Hôtel avec vue sur les vignobles et montagnes", coordonnees: "43.3421,142.3830", type: "hotel", mapsLink: true },
-                        { nom: "Station de ski Furano", description: "Domaine skiable réputé d'Hokkaido", coordonnees: "43.3241,142.3860", type: "ski", mapsLink: true },
-                        { nom: "Vignobles de Furano", description: "Vignobles produisant le vin local", coordonnees: "43.3321,142.3930", type: "food", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Omoide Yokocho", desc: "Ruelle rétro", coords: [35.6930, 139.6996] }]
                 },
                 {
-                    date: "2026-02-26",
-                    lieu: "Furano",
-                    pays: "Japon",
-                    coordonnees: "43.3241,142.3860",
-                    hotel: "Winery Hotel and Condominium Furano",
-                    activites: [
-                        { time: "07:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "09:00", title: "Départ station de ski", description: "Trajet vers la station de ski Furano", coordinates: "43.3241,142.3860", mapsLink: true },
-                        { time: "09:30", title: "Ski à Furano Resort", description: "Session de ski sur les pistes" },
-                        { time: "12:30", title: "Déjeuner", description: "Repas à la station" },
-                        { time: "13:30", title: "Ski après-midi", description: "Suite des activités de ski" },
-                        { time: "16:00", title: "Fin du ski", description: "Fin de la journée de ski" },
-                        { time: "16:30", title: "Retour hôtel", description: "Retour à l'hôtel", coordinates: "43.3421,142.3830", mapsLink: true },
-                        { time: "17:30", title: "Détente onsen", description: "Détente dans les sources chaudes" },
-                        { time: "19:30", title: "Dîner", description: "Repas à l'hôtel" }
+                    id: 6,
+                    date: new Date('2026-02-25'),
+                    country: 'Japon',
+                    location: 'Furano',
+                    coords: [43.3421, 142.3832],
+                    hotel: { name: "Winery Hotel Furano", room: "Vue Montagne", link: "https://www.google.com/maps/search/?api=1&query=Winery+Hotel+Furano" },
+                    challenge: { title: "🏔️ Arrivée montagne", desc: "Montagnes enneigées", hint: "Vue hôtel" },
+                    activities: [
+                        { time: "11:10", title: "Vol vers Asahikawa", desc: "Hokkaido", coords: [43.6708, 142.4537] },
+                        { time: "16:30", title: "Matériel Ski", desc: "Location", coords: [43.3340, 142.3620] }
                     ],
-                    pointsInteret: [
-                        { nom: "Station de ski Furano", description: "Domaine skiable avec pistes pour tous niveaux", coordonnees: "43.3241,142.3860", type: "ski", mapsLink: true },
-                        { nom: "Onsen de Furano", description: "Sources chaudes naturelles pour la détente", coordonnees: "43.3421,142.3830", type: "wellness", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Ningle Terrace", desc: "Cabanes", coords: [43.3252, 142.3563] }]
                 },
                 {
-                    date: "2026-02-27",
-                    lieu: "Furano",
-                    pays: "Japon",
-                    coordonnees: "43.3241,142.3860",
-                    hotel: "Winery Hotel and Condominium Furano",
-                    activites: [
-                        { time: "07:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "09:00", title: "Rencontre avec guide", description: "Rencontre avec le guide local" },
-                        { time: "09:30", title: "Guide local - spots hors-piste", description: "Exploration des zones hors-piste avec guide" },
-                        { time: "12:30", title: "Déjeuner", description: "Repas en montagne ou à la station" },
-                        { time: "13:30", title: "Suite des activités nature", description: "Suite de la découverte des spots naturels" },
-                        { time: "16:00", title: "Fin des activités", description: "Fin de la journée avec le guide" },
-                        { time: "16:30", title: "Retour hôtel", description: "Retour à l'hôtel", coordinates: "43.3421,142.3830", mapsLink: true },
-                        { time: "17:30", title: "Repos et détente", description: "Temps libre pour se reposer" },
-                        { time: "19:30", title: "Dîner", description: "Repas à l'hôtel" }
+                    id: 7,
+                    date: new Date('2026-02-26'),
+                    country: 'Japon',
+                    location: 'Furano',
+                    coords: [43.3421, 142.3832],
+                    hotel: { name: "Winery Hotel Furano", room: "Vue Montagne", link: "https://www.google.com/maps/search/?api=1&query=Winery+Hotel+Furano" },
+                    challenge: { title: "⛷️ Ski", desc: "Action sur pistes", hint: "Piste bleue" },
+                    activities: [
+                        { time: "09:30", title: "Ski Furano", desc: "Glisse", coords: [43.3340, 142.3620] },
+                        { time: "17:30", title: "Onsen", desc: "Détente", coords: [43.3421, 142.3832] }
                     ],
-                    pointsInteret: [
-                        { nom: "Zones hors-piste Furano", description: "Secteurs pour skieurs expérimentés avec guide", coordonnees: "43.3241,142.3860", type: "ski", mapsLink: true },
-                        { nom: "Paysages montagneux", description: "Vues panoramiques sur les montagnes d'Hokkaido", coordonnees: "43.3241,142.3860", type: "nature", mapsLink: true }
-                    ]
+                    suggestions: []
                 },
                 {
-                    date: "2026-02-28",
-                    lieu: "Furano",
-                    pays: "Japon",
-                    coordonnees: "43.3421,142.3830",
-                    hotel: "Winery Hotel and Condominium Furano",
-                    activites: [
-                        { time: "08:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "10:00", title: "Fromagerie Furano", description: "Visite de la fromagerie locale", coordinates: "43.3321,142.3930", mapsLink: true },
-                        { time: "12:00", title: "Déjeuner", description: "Repas léger" },
-                        { time: "14:00", title: "Dégustation vin Furano", description: "Visite et dégustation à la cave locale", coordinates: "43.3321,142.3930", mapsLink: true },
-                        { time: "16:00", title: "Fin des dégustations", description: "Retour à l'hôtel" },
-                        { time: "17:00", title: "Temps libre", description: "Détente à l'hôtel" },
-                        { time: "19:00", title: "Dîner gastronomique", description: "Repas spécial dans un restaurant local" },
-                        { time: "21:30", title: "Retour à l'hôtel", description: "Retour à l'hôtel pour la nuit" }
+                    id: 8,
+                    date: new Date('2026-02-27'),
+                    country: 'Japon',
+                    location: 'Furano',
+                    coords: [43.3421, 142.3832],
+                    hotel: { name: "Winery Hotel Furano", room: "Vue Montagne", link: "https://www.google.com/maps/search/?api=1&query=Winery+Hotel+Furano" },
+                    challenge: { title: "🎿 Hors-piste", desc: "Poudreuse avec guide", hint: "Nature" },
+                    activities: [
+                        { time: "09:30", title: "Guide Local", desc: "Hors-piste", coords: [43.3500, 142.3700] }
                     ],
-                    pointsInteret: [
-                        { nom: "Fromagerie Furano", description: "Fromagerie produisant des fromages locaux", coordonnees: "43.3321,142.3930", type: "food", mapsLink: true },
-                        { nom: "Furano Wine Factory", description: "Domaine viticole et cave de dégustation", coordonnees: "43.3321,142.3930", type: "food", mapsLink: true },
-                        { nom: "Paysages ruraux de Furano", description: "Champs et collines de la région", coordonnees: "43.3421,142.3830", type: "nature", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Furano Delice", desc: "Pâtisserie", coords: [43.3350, 142.3650] }]
                 },
                 {
-                    date: "2026-03-01",
-                    lieu: "Furano",
-                    pays: "Japon",
-                    coordonnees: "43.3241,142.3860",
-                    hotel: "Winery Hotel and Condominium Furano",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "09:30", title: "Dernière session ski", description: "Dernières descentes sur les pistes" },
-                        { time: "12:30", title: "Fin du ski", description: "Retour du matériel" },
-                        { time: "13:00", title: "Déjeuner", description: "Repas à la station" },
-                        { time: "14:00", title: "Retour à l'hôtel", description: "Retour à l'hôtel", coordinates: "43.3421,142.3830", mapsLink: true },
-                        { time: "14:30", title: "Préparation bagages", description: "Préparation des bagages pour le départ" },
-                        { time: "17:00", title: "Temps libre", description: "Dernier moment à Furano" },
-                        { time: "19:00", title: "Dîner d'adieu", description: "Dernier repas à Hokkaido" }
+                    id: 9,
+                    date: new Date('2026-02-28'),
+                    country: 'Japon',
+                    location: 'Furano',
+                    coords: [43.3421, 142.3832],
+                    hotel: { name: "Winery Hotel Furano", room: "Vue Montagne", link: "https://www.google.com/maps/search/?api=1&query=Winery+Hotel+Furano" },
+                    challenge: { title: "🍷 Dégustation", desc: "Vin Furano", hint: "Vignes" },
+                    activities: [
+                        { time: "10:00", title: "Fromagerie", desc: "Visite", coords: [43.3094, 142.3941] },
+                        { time: "14:00", title: "Dégustation Vin", desc: "Cave", coords: [43.3475, 142.3816] }
                     ],
-                    pointsInteret: [
-                        { nom: "Station de ski Furano", description: "Dernières descentes sur les pistes", coordonnees: "43.3241,142.3860", type: "ski", mapsLink: true },
-                        { nom: "Centre-ville Furano", description: "Dernières emplettes et découvertes", coordonnees: "43.3421,142.3830", type: "shopping", mapsLink: true }
-                    ]
+                    suggestions: []
                 },
                 {
-                    date: "2026-03-02",
-                    lieu: "Kyoto",
-                    pays: "Japon",
-                    coordonnees: "35.0116,135.7681",
-                    hotel: "Hôtel à Kyoto (à déterminer)",
-                    activites: [
-                        { time: "07:00", title: "Petit-déjeuner et check-out", description: "Dernier repas à l'hôtel et départ" },
-                        { time: "08:00", title: "Transfert aéroport", description: "Trajet vers l'aéroport de Shin Chitose" },
-                        { time: "10:00", title: "Enregistrement vol", description: "Formalités d'enregistrement" },
-                        { time: "14:00", title: "Vol Shin Chitose → Osaka Itami", description: "Décollage pour Osaka" },
-                        { time: "16:05", title: "Arrivée Osaka", description: "Atterrissage à l'aéroport d'Osaka Itami" },
-                        { time: "16:45", title: "Récupération bagages", description: "Récupération des bagages" },
-                        { time: "17:15", title: "Transfert vers Kyoto", description: "Trajet en train ou bus vers Kyoto" },
-                        { time: "18:30", title: "Arrivée Kyoto et installation", description: "Arrivée à Kyoto et check-in à l'hôtel" },
-                        { time: "19:30", title: "Dîner", description: "Repas dans le quartier de l'hôtel" }
+                    id: 10,
+                    date: new Date('2026-03-01'),
+                    country: 'Japon',
+                    location: 'Furano',
+                    coords: [43.3421, 142.3832],
+                    hotel: { name: "Winery Hotel Furano", room: "Vue Montagne", link: "https://www.google.com/maps/search/?api=1&query=Winery+Hotel+Furano" },
+                    challenge: { title: "❄️ Dernier ski", desc: "Groupe équipement", hint: "Panneau station" },
+                    activities: [
+                        { time: "09:30", title: "Matinée Ski", desc: "Pistes", coords: [43.3340, 142.3620] },
+                        { time: "19:00", title: "Dîner Adieu", desc: "Hokkaido", coords: [43.3428, 142.3860] }
                     ],
-                    pointsInteret: [
-                        { nom: "Gare de Kyoto", description: "Gare moderne avec centre commercial et observatoire", coordonnees: "34.9858,135.7586", type: "transport", mapsLink: true },
-                        { nom: "Pontocho", description: "Allée traditionnelle avec restaurants et bars", coordonnees: "35.0056,135.7691", type: "food", mapsLink: true }
-                    ]
+                    suggestions: []
                 },
                 {
-                    date: "2026-03-03",
-                    lieu: "Kyoto",
-                    pays: "Japon",
-                    coordonnees: "35.0394,135.7292",
-                    hotel: "Hôtel à Kyoto (à déterminer)",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "09:00", title: "Kinkaku-ji (Pavillon d'Or)", description: "Visite du célèbre temple recouvert d'or", coordinates: "35.0394,135.7292", mapsLink: true },
-                        { time: "11:00", title: "Transfert vers le centre", description: "Trajet vers le marché Nishiki" },
-                        { time: "11:30", title: "Marché Nishiki", description: "Découverte du marché alimentaire traditionnel", coordinates: "35.0051,135.7628", mapsLink: true },
-                        { time: "12:30", title: "Déjeuner au marché", description: "Repas avec spécialités locales" },
-                        { time: "14:00", title: "Sanctuaire Heian", description: "Visite du sanctuaire et ses jardins", coordinates: "35.0158,135.7822", mapsLink: true },
-                        { time: "16:00", title: "Fin des visites", description: "Fin des activités programmées" },
-                        { time: "17:00", title: "Temps libre", description: "Exploration libre de Kyoto" },
-                        { time: "19:00", title: "Dîner", description: "Repas dans le quartier de Gion" }
+                    id: 11,
+                    date: new Date('2026-03-02'),
+                    country: 'Japon',
+                    location: 'Kyoto',
+                    coords: [34.9858, 135.7588],
+                    hotel: { name: "Insomnia KYOTO OIKE", room: "Chambre Double", link: "https://www.google.com/maps/search/?api=1&query=Insomnia+Kyoto+Oike" },
+                    challenge: { title: "🎎 Arrivée Kyoto", desc: "Gare de Kyoto", hint: "Architecture" },
+                    activities: [
+                        { time: "14:00", title: "Vol vers Osaka", desc: "Itami", coords: [34.7855, 135.4382] },
+                        { time: "18:30", title: "Arrivée Kyoto", desc: "Installation", coords: [35.0116, 135.7600] }
                     ],
-                    pointsInteret: [
-                        { nom: "Kinkaku-ji (Pavillon d'Or)", description: "Temple bouddhiste recouvert de feuilles d'or", coordonnees: "35.0394,135.7292", type: "culture", mapsLink: true },
-                        { nom: "Marché Nishiki", description: "Marché couvert avec spécialités locales", coordonnees: "35.0051,135.7628", type: "food", mapsLink: true },
-                        { nom: "Sanctuaire Heian", description: "Sanctuaire shintoïste avec jardins paisibles", coordonnees: "35.0158,135.7822", type: "culture", mapsLink: true },
-                        { nom: "Gion", description: "Quartier des geishas et maisons de thé", coordonnees: "35.0036,135.7721", type: "culture", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Kyoto Tower", desc: "Vue nocturne", coords: [34.9875, 135.7593] }]
                 },
                 {
-                    date: "2026-03-04",
-                    lieu: "Kyoto",
-                    pays: "Japon",
-                    coordonnees: "34.9671,135.7727",
-                    hotel: "Hôtel à Kyoto (à déterminer)",
-                    activites: [
-                        { time: "07:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "07:30", title: "Fushimi Inari (visite tôt)", description: "Visite du sanctuaire aux milliers de torii", coordinates: "34.9671,135.7727", mapsLink: true },
-                        { time: "09:30", title: "Fin de la visite", description: "Fin de la visite du sanctuaire" },
-                        { time: "10:00", title: "Chemin du Philosophe", description: "Promenade le long du canal pittoresque", coordinates: "35.0158,135.7822", mapsLink: true },
-                        { time: "12:00", title: "Déjeuner", description: "Repas le long du canal" },
-                        { time: "13:00", title: "Temps libre", description: "Suite de la promenade ou visites annexes" },
-                        { time: "16:00", title: "Retour à l'hôtel", description: "Retour à l'hôtel pour se reposer" },
-                        { time: "18:00", title: "Quartier de Pontocho", description: "Exploration du quartier traditionnel", coordinates: "35.0056,135.7691", mapsLink: true },
-                        { time: "20:00", title: "Dîner", description: "Repas à Pontocho" }
+                    id: 12,
+                    date: new Date('2026-03-03'),
+                    country: 'Japon',
+                    location: 'Kyoto (Nord)',
+                    coords: [35.0394, 135.7292],
+                    hotel: { name: "Insomnia KYOTO OIKE", room: "Chambre Double", link: "https://www.google.com/maps/search/?api=1&query=Insomnia+Kyoto+Oike" },
+                    challenge: { title: "🏯 Pavillon d'Or", desc: "Reflet Kinkaku-ji", hint: "Rive opposée" },
+                    activities: [
+                        { time: "09:00", title: "Kinkaku-ji", desc: "Pavillon d'Or", coords: [35.0394, 135.7292] },
+                        { time: "11:30", title: "Marché Nishiki", desc: "Déjeuner", coords: [35.0050, 135.7649] },
+                        { time: "19:00", title: "Gion", desc: "Dîner", coords: [35.0037, 135.7778] }
                     ],
-                    pointsInteret: [
-                        { nom: "Fushimi Inari Taisha", description: "Sanctuaire célèbre pour ses milliers de torii rouges", coordonnees: "34.9671,135.7727", type: "culture", mapsLink: true },
-                        { nom: "Chemin du Philosophe", description: "Sentier pédestre le long d'un canal pittoresque", coordonnees: "35.0158,135.7822", type: "nature", mapsLink: true },
-                        { nom: "Temple Ginkaku-ji", description: "Temple du Pavillon d'Argent et ses jardins", coordonnees: "35.0271,135.7982", type: "culture", mapsLink: true },
-                        { nom: "Pontocho", description: "Allée traditionnelle avec restaurants", coordonnees: "35.0056,135.7691", type: "food", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Ryoan-ji", desc: "Jardin zen", coords: [35.0345, 135.7182] }]
                 },
                 {
-                    date: "2026-03-05",
-                    lieu: "Nara",
-                    pays: "Japon",
-                    coordonnees: "34.6851,135.8048",
-                    hotel: "Hôtel à Kyoto (à déterminer)",
-                    activites: [
-                        { time: "07:30", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "08:30", title: "Train pour Nara", description: "Trajet en train vers Nara" },
-                        { time: "09:30", title: "Arrivée Nara", description: "Arrivée à Nara et début des visites" },
-                        { time: "09:45", title: "Todai-ji et grand Bouddha", description: "Visite du temple et du grand Bouddha", coordinates: "34.6889,135.8399", mapsLink: true },
-                        { time: "11:30", title: "Parc de Nara et cerfs", description: "Rencontre avec les cerfs sacrés en liberté", coordinates: "34.6851,135.8048", mapsLink: true },
-                        { time: "12:30", title: "Déjeuner", description: "Repas à Nara" },
-                        { time: "13:30", title: "Quartier traditionnel Nara-machi", description: "Exploration du quartier traditionnel", coordinates: "34.6789,135.8329", mapsLink: true },
-                        { time: "15:30", title: "Temps libre", description: "Dernières découvertes à Nara" },
-                        { time: "16:30", title: "Retour train vers Kyoto", description: "Trajet de retour vers Kyoto" },
-                        { time: "17:30", title: "Arrivée Kyoto", description: "Retour à l'hôtel" },
-                        { time: "19:00", title: "Dîner", description: "Repas dans le quartier de l'hôtel" }
+                    id: 13,
+                    date: new Date('2026-03-04'),
+                    country: 'Japon',
+                    location: 'Kyoto (Est)',
+                    coords: [34.9671, 135.7727],
+                    hotel: { name: "Insomnia KYOTO OIKE", room: "Chambre Double", link: "https://www.google.com/maps/search/?api=1&query=Insomnia+Kyoto+Oike" },
+                    challenge: { title: "⛩️ Torii infinis", desc: "Fushimi Inari", hint: "Haut colline" },
+                    activities: [
+                        { time: "07:30", title: "Fushimi Inari", desc: "Sanctuaire", coords: [34.9671, 135.7727] },
+                        { time: "10:00", title: "Chemin Philosophe", desc: "Promenade", coords: [35.0265, 135.7955] },
+                        { time: "18:00", title: "Pontocho", desc: "Soirée", coords: [35.0064, 135.7709] }
                     ],
-                    pointsInteret: [
-                        { nom: "Todai-ji", description: "Temple abritant le plus grand Bouddha en bronze du monde", coordonnees: "34.6889,135.8399", type: "culture", mapsLink: true },
-                        { nom: "Parc de Nara", description: "Parc avec centaines de cerfs sacrés en liberté", coordonnees: "34.6851,135.8048", type: "nature", mapsLink: true },
-                        { nom: "Nara-machi", description: "Quartier traditionnel avec maisons anciennes", coordonnees: "34.6789,135.8329", type: "culture", mapsLink: true },
-                        { nom: "Kasuga Taisha", description: "Sanctuaire aux milliers de lanternes de pierre", coordonnees: "34.6814,135.8484", type: "culture", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Ginkaku-ji", desc: "Pavillon d'Argent", coords: [35.0270, 135.7982] }]
                 },
                 {
-                    date: "2026-03-06",
-                    lieu: "Arashiyama & Vol",
-                    pays: "Japon",
-                    coordonnees: "35.0094,135.6772",
-                    hotel: "Vol Osaka → Manille",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas à l'hôtel" },
-                        { time: "09:00", title: "Arashiyama (forêt bambous)", description: "Visite de la célèbre forêt de bambous", coordinates: "35.0094,135.6772", mapsLink: true },
-                        { time: "12:00", title: "Fin de la visite", description: "Fin des activités à Arashiyama" },
-                        { time: "12:30", title: "Déjeuner", description: "Repas à Arashiyama" },
-                        { time: "13:30", title: "Transfert aéroport Kansai", description: "Trajet vers l'aéroport d'Osaka" },
-                        { time: "15:30", title: "Arrivée aéroport", description: "Arrivée à l'aéroport Kansai" },
-                        { time: "16:00", title: "Enregistrement vol international", description: "Formalités d'enregistrement" },
-                        { time: "19:35", title: "Vol Osaka → Manille", description: "Décollage pour Manille" },
-                        { time: "23:00", title: "Nuit à bord", description: "Vol de nuit vers Manille" }
+                    id: 14,
+                    date: new Date('2026-03-05'),
+                    country: 'Japon',
+                    location: 'Nara',
+                    coords: [34.6851, 135.8048],
+                    hotel: { name: "Insomnia KYOTO OIKE", room: "Chambre Double", link: "https://www.google.com/maps/search/?api=1&query=Insomnia+Kyoto+Oike" },
+                    challenge: { title: "🦌 Cerfs sacrés", desc: "Parc de Nara", hint: "Biscuits" },
+                    activities: [
+                        { time: "09:45", title: "Todai-ji", desc: "Grand Bouddha", coords: [34.6889, 135.8398] },
+                        { time: "11:30", title: "Parc de Nara", desc: "Balade", coords: [34.6850, 135.8430] }
                     ],
-                    pointsInteret: [
-                        { nom: "Forêt de bambous d'Arashiyama", description: "Allée célèbre de bambous géants", coordonnees: "35.0094,135.6772", type: "nature", mapsLink: true },
-                        { nom: "Temple Tenryu-ji", description: "Temple classé au patrimoine mondial de l'UNESCO", coordonnees: "35.0158,135.6739", type: "culture", mapsLink: true },
-                        { nom: "Pont Togetsukyo", description: "Pont emblématique d'Arashiyama", coordonnees: "35.0158,135.6789", type: "viewpoint", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Kasuga Taisha", desc: "Sanctuaire lanternes", coords: [34.6814, 135.8484] }]
                 },
                 {
-                    date: "2026-03-07",
-                    lieu: "Bohol",
-                    pays: "Philippines",
-                    coordonnees: "9.8499,124.1435",
-                    hotel: "Fox & The Firefly",
-                    activites: [
-                        { time: "23:15", title: "Arrivée Manille", description: "Arrivée à l'aéroport de Manille" },
-                        { time: "00:00", title: "Nuit à l'aéroport", description: "Attente de la correspondance à l'aéroport" },
-                        { time: "05:20", title: "Vol Manille → Panglao", description: "Décollage pour Panglao" },
-                        { time: "06:55", title: "Arrivée Panglao", description: "Atterrissage à l'aéroport de Panglao" },
-                        { time: "07:30", title: "Transfert Fox & The Firefly", description: "Trajet vers le lodge", coordinates: "9.8499,124.1435", mapsLink: true },
-                        { time: "08:30", title: "Arrivée et installation", description: "Check-in et installation au lodge" },
-                        { time: "10:00", title: "Repos", description: "Temps de repos après le voyage" },
-                        { time: "12:00", title: "Déjeuner", description: "Repas au lodge" },
-                        { time: "14:00", title: "Détente", description: "Temps libre pour se reposer" },
-                        { time: "18:00", title: "Dîner", description: "Repas au lodge" },
-                        { time: "20:00", title: "Observation lucioles", description: "Observation des lucioles le long de la rivière" }
+                    id: 15,
+                    date: new Date('2026-03-06'),
+                    country: 'Japon',
+                    location: 'Arashiyama',
+                    coords: [35.0116, 135.6716],
+                    hotel: { name: "Vol Nuit", room: "Siège Avion", link: "#" },
+                    challenge: { title: "🎋 Bambous", desc: "Forêt Arashiyama", hint: "Matin tôt" },
+                    activities: [
+                        { time: "09:00", title: "Forêt Bambous", desc: "Visite", coords: [35.0169, 135.6713] },
+                        { time: "19:35", title: "Vol Manille", desc: "Départ", coords: [34.4320, 135.2304] }
                     ],
-                    pointsInteret: [
-                        { nom: "Fox & The Firefly", description: "Lodge écologique avec observation de lucioles", coordonnees: "9.8499,124.1435", type: "hotel", mapsLink: true },
-                        { nom: "Rivière Loboc", description: "Rivière où se trouve le lodge", coordonnees: "9.8499,124.1435", type: "nature", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Monkey Park", desc: "Singes", coords: [35.0094, 135.6744] }]
                 },
                 {
-                    date: "2026-03-08",
-                    lieu: "Bohol",
-                    pays: "Philippines",
-                    coordonnees: "9.8299,124.1435",
-                    hotel: "Fox & The Firefly",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas au lodge" },
-                        { time: "09:00", title: "Collines de Chocolat", description: "Visite des célèbres formations géologiques", coordinates: "9.8299,124.1435", mapsLink: true },
-                        { time: "10:30", title: "Sanctuaire des Tarsiers", description: "Rencontre avec les plus petits primates du monde", coordinates: "9.8199,124.1535", mapsLink: true },
-                        { time: "11:30", title: "Transfert vers la rivière", description: "Trajet vers la rivière Loboc" },
-                        { time: "12:30", title: "Croisière rivière Loboc", description: "Croisière avec déjeuner sur la rivière", coordinates: "9.8499,124.1435", mapsLink: true },
-                        { time: "14:00", title: "Fin de la croisière", description: "Retour au lodge" },
-                        { time: "14:30", title: "Temps libre", description: "Détente au lodge" },
-                        { time: "17:00", title: "Repos", description: "Temps de relaxation" },
-                        { time: "19:00", title: "Dîner", description: "Repas au lodge" },
-                        { time: "21:00", title: "Soirée détente", description: "Dernière soirée au lodge" }
+                    id: 16,
+                    date: new Date('2026-03-07'),
+                    country: 'Philippines',
+                    location: 'Bohol (Loboc)',
+                    coords: [9.6378, 124.0331],
+                    hotel: { name: "Fox & The Firefly", room: "Cottage", link: "https://www.google.com/maps/search/?api=1&query=Fox+and+The+Firefly+Bohol" },
+                    challenge: { title: "🌴 Arrivée", desc: "Lodge & Rivière", hint: "Terrasse" },
+                    activities: [
+                        { time: "08:30", title: "Arrivée Bohol", desc: "Installation", coords: [9.6378, 124.0331] },
+                        { time: "20:00", title: "Lucioles", desc: "Rivière", coords: [9.6385, 124.0300] }
                     ],
-                    pointsInteret: [
-                        { nom: "Collines de Chocolat", description: "Formations géologiques uniques en forme de cônes", coordonnees: "9.8299,124.1435", type: "nature", mapsLink: true },
-                        { nom: "Sanctuaire des Tarsiers", description: "Refuge pour les plus petits primates du monde", coordonnees: "9.8199,124.1535", type: "nature", mapsLink: true },
-                        { nom: "Croisière sur la rivière Loboc", description: "Croisière pittoresque avec déjeuner buffet", coordonnees: "9.8499,124.1435", type: "food", mapsLink: true }
-                    ]
+                    suggestions: []
                 },
                 {
-                    date: "2026-03-09",
-                    lieu: "Bohol",
-                    pays: "Philippines",
-                    coordonnees: "9.5799,123.8435",
-                    hotel: "Amorita Resort",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas au lodge" },
-                        { time: "09:00", title: "Check-out Fox & The Firefly", description: "Départ du lodge" },
-                        { time: "10:00", title: "Transfert vers Amorita Resort", description: "Trajet vers le resort de Panglao" },
-                        { time: "11:00", title: "Arrivée Amorita Resort", description: "Arrivée au resort de luxe", coordinates: "9.5799,123.8435", mapsLink: true },
-                        { time: "11:30", title: "Installation", description: "Check-in et installation au resort" },
-                        { time: "12:30", title: "Déjeuner", description: "Repas au resort" },
-                        { time: "14:00", title: "Détente", description: "Temps libre pour explorer le resort" },
-                        { time: "16:00", title: "Piscine/plage", description: "Détente à la piscine ou sur la plage" },
-                        { time: "18:00", title: "Coucher de soleil", description: "Observation du coucher de soleil" },
-                        { time: "19:30", title: "Dîner", description: "Repas au resort" }
+                    id: 17,
+                    date: new Date('2026-03-08'),
+                    country: 'Philippines',
+                    location: 'Bohol (Centre)',
+                    coords: [9.8297, 124.1397],
+                    hotel: { name: "Fox & The Firefly", room: "Cottage", link: "https://www.google.com/maps/search/?api=1&query=Fox+and+The+Firefly+Bohol" },
+                    challenge: { title: "🍫 Chocolate Hills", desc: "Vue collines", hint: "Plateforme" },
+                    activities: [
+                        { time: "09:00", title: "Chocolate Hills", desc: "Visite", coords: [9.8297, 124.1397] },
+                        { time: "10:30", title: "Tarsiers", desc: "Sanctuaire", coords: [9.6918, 124.0096] },
+                        { time: "12:30", title: "Croisière Loboc", desc: "Déjeuner", coords: [9.6391, 124.0299] }
                     ],
-                    pointsInteret: [
-                        { nom: "Amorita Resort", description: "Resort de luxe sur les falaises de Panglao", coordonnees: "9.5799,123.8435", type: "hotel", mapsLink: true },
-                        { nom: "Plage d'Alona", description: "Plage de sable blanc célèbre de Panglao", coordonnees: "9.5699,123.8535", type: "beach", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Man Made Forest", desc: "Forêt acajou", coords: [9.6960, 124.0710] }]
                 },
                 {
-                    date: "2026-03-10",
-                    lieu: "Bohol",
-                    pays: "Philippines",
-                    coordonnees: "9.5199,123.6835",
-                    hotel: "Amorita Resort",
-                    activites: [
-                        { time: "07:00", title: "Petit-déjeuner", description: "Repas au resort" },
-                        { time: "08:00", title: "Départ pour plongée PADI", description: "Transfert vers le centre de plongée" },
-                        { time: "09:00", title: "2 plongées à Balicasag Island", description: "Plongées avec découverte du drop-off et coraux", coordinates: "9.5199,123.6835", mapsLink: true },
-                        { time: "12:30", title: "Déjeuner", description: "Repas sur l'île ou bateau" },
-                        { time: "13:30", title: "Retour plongée", description: "Suite des activités de plongée" },
-                        { time: "15:00", title: "Fin des plongées", description: "Retour vers le resort" },
-                        { time: "16:00", title: "Retour resort", description: "Retour à Amorita Resort", coordinates: "9.5799,123.8435", mapsLink: true },
-                        { time: "17:00", title: "Détente", description: "Temps libre pour se reposer" },
-                        { time: "19:00", title: "Dîner", description: "Repas au resort" }
+                    id: 18,
+                    date: new Date('2026-03-09'),
+                    country: 'Philippines',
+                    location: 'Panglao',
+                    coords: [9.55, 123.77],
+                    hotel: { name: "Amorita Resort", room: "Suite Luxe", link: "https://www.google.com/maps/search/?api=1&query=Amorita+Resort+Bohol" },
+                    challenge: { title: "🏝️ Resort", desc: "Infinity Pool", hint: "Coucher soleil" },
+                    activities: [
+                        { time: "11:00", title: "Amorita Resort", desc: "Installation", coords: [9.5483, 123.7764] },
+                        { time: "18:00", title: "Sunset", desc: "Plage", coords: [9.5480, 123.7760] }
                     ],
-                    pointsInteret: [
-                        { nom: "Île de Balicasag", description: "Île réputée pour ses spots de plongée exceptionnels", coordonnees: "9.5199,123.6835", type: "diving", mapsLink: true },
-                        { nom: "Drop-off de Balicasag", description: "Mur de corail avec tombant spectaculaire", coordonnees: "9.5199,123.6835", type: "diving", mapsLink: true },
-                        { nom: "Jardin corallien", description: "Zone corallienne riche en vie marine", coordonnees: "9.5199,123.6835", type: "diving", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Alona Beach", desc: "Bars", coords: [9.5483, 123.7764] }]
                 },
                 {
-                    date: "2026-03-11",
-                    lieu: "Bohol",
-                    pays: "Philippines",
-                    coordonnees: "9.5799,123.8435",
-                    hotel: "Amorita Resort",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas au resort" },
-                        { time: "08:00", title: "Option A: Snorkeling avec dauphins", description: "Excursion matinale pour voir les dauphins" },
-                        { time: "08:00", title: "Option B: Détente spa et plage", description: "Journée détente au resort" },
-                        { time: "12:00", title: "Déjeuner", description: "Repas au resort" },
-                        { time: "14:00", title: "Temps libre", description: "Activités libres au resort" },
-                        { time: "16:00", title: "Détente", description: "Temps de relaxation" },
-                        { time: "18:00", title: "Préparation dîner romantique", description: "Préparation pour le dîner spécial" },
-                        { time: "19:00", title: "Dîner romantique plage", description: "Dîner spécial sur la plage" },
-                        { time: "21:00", title: "Soirée", description: "Dernière soirée à Bohol" }
+                    id: 19,
+                    date: new Date('2026-03-10'),
+                    country: 'Philippines',
+                    location: 'Balicasag',
+                    coords: [9.5191, 123.6811],
+                    hotel: { name: "Amorita Resort", room: "Suite Luxe", link: "https://www.google.com/maps/search/?api=1&query=Amorita+Resort+Bohol" },
+                    challenge: { title: "🐠 Plongée", desc: "Selfie sous-marin", hint: "Récif" },
+                    activities: [
+                        { time: "09:00", title: "Plongée PADI", desc: "Balicasag", coords: [9.5191, 123.6811] },
+                        { time: "16:00", title: "Retour", desc: "Resort", coords: [9.5483, 123.7764] }
                     ],
-                    pointsInteret: [
-                        { nom: "Snorkeling avec dauphins", description: "Excursion pour nager avec les dauphins", coordonnees: "9.5699,123.8535", type: "diving", mapsLink: true },
-                        { nom: "Amorita Resort Spa", description: "Spa proposant des soins traditionnels", coordonnees: "9.5799,123.8435", type: "wellness", mapsLink: true },
-                        { nom: "Plage d'Alona", description: "Plage pour la détente et les activités nautiques", coordonnees: "9.5699,123.8535", type: "beach", mapsLink: true }
-                    ]
+                    suggestions: []
                 },
                 {
-                    date: "2026-03-12",
-                    lieu: "Bohol",
-                    pays: "Philippines",
-                    coordonnees: "9.5799,123.8435",
-                    hotel: "Amorita Resort",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Repas au resort" },
-                        { time: "09:00", title: "Activités au choix au resort", description: "Dernières activités selon envies" },
-                        { time: "12:00", title: "Déjeuner", description: "Repas au resort" },
-                        { time: "14:00", title: "Détente et préparation bagages", description: "Temps libre et préparation du départ" },
-                        { time: "16:00", title: "Dernier moment détente", description: "Dernière session piscine/plage" },
-                        { time: "18:00", title: "Dîner d'adieu", description: "Dernier repas aux Philippines" },
-                        { time: "20:00", title: "Soirée", description: "Dernière soirée au resort" }
+                    id: 20,
+                    date: new Date('2026-03-11'),
+                    country: 'Philippines',
+                    location: 'Panglao',
+                    coords: [9.55, 123.77],
+                    hotel: { name: "Amorita Resort", room: "Suite Luxe", link: "https://www.google.com/maps/search/?api=1&query=Amorita+Resort+Bohol" },
+                    challenge: { title: "🐬 Dauphins", desc: "Photo mer", hint: "Bateau" },
+                    activities: [
+                        { time: "08:00", title: "Dauphins", desc: "Excursion", coords: [9.5300, 123.7500] },
+                        { time: "19:00", title: "Dîner Plage", desc: "Romantique", coords: [9.5483, 123.7764] }
                     ],
-                    pointsInteret: [
-                        { nom: "Amorita Resort", description: "Dernière journée de détente au resort", coordonnees: "9.5799,123.8435", type: "hotel", mapsLink: true },
-                        { nom: "Plage d'Alona", description: "Derniers moments sur la plage", coordonnees: "9.5699,123.8535", type: "beach", mapsLink: true }
-                    ]
+                    suggestions: [{ title: "Hinagdanan Cave", desc: "Grotte", coords: [9.6250, 123.8000] }]
                 },
                 {
-                    date: "2026-03-13",
-                    lieu: "Vol retour",
-                    pays: "International",
-                    coordonnees: "",
-                    hotel: "Vol",
-                    activites: [
-                        { time: "08:00", title: "Petit-déjeuner", description: "Dernier repas au resort" },
-                        { time: "09:00", title: "Dernières activités au resort", description: "Derniers moments de détente" },
-                        { time: "12:00", title: "Déjeuner", description: "Repas au resort" },
-                        { time: "14:00", title: "Check-out Amorita Resort", description: "Départ du resort" },
-                        { time: "15:00", title: "Transfert aéroport Panglao", description: "Trajet vers l'aéroport de Panglao" },
-                        { time: "16:00", title: "Enregistrement vol PR2778", description: "Formalités d'enregistrement" },
-                        { time: "18:50", title: "Vol PR2778 Panglao → Manille", description: "Décollage pour Manille" },
-                        { time: "20:25", title: "Arrivée Manille", description: "Atterrissage à l'aéroport de Manille" },
-                        { time: "21:30", title: "Escale à Manille", description: "Correspondance pour le vol EK335" },
-                        { time: "23:30", title: "Vol EK335 Manille → Dubai", description: "Décollage pour Dubai" }
+                    id: 21,
+                    date: new Date('2026-03-12'),
+                    country: 'Philippines',
+                    location: 'Panglao',
+                    coords: [9.55, 123.77],
+                    hotel: { name: "Amorita Resort", room: "Suite Luxe", link: "https://www.google.com/maps/search/?api=1&query=Amorita+Resort+Bohol" },
+                    challenge: { title: "🌅 Sunset", desc: "Photo romantique", hint: "Sable" },
+                    activities: [
+                        { time: "09:00", title: "Détente", desc: "Resort", coords: [9.5483, 123.7764] },
+                        { time: "18:00", title: "Dîner Adieu", desc: "Philippines", coords: [9.5483, 123.7764] }
                     ],
-                    pointsInteret: [
-                        { nom: "Aéroport de Panglao", description: "Départ des Philippines", type: "airport" },
-                        { nom: "Aéroport de Manille", description: "Correspondance pour le vol international", type: "airport" }
-                    ]
+                    suggestions: []
                 },
                 {
-                    date: "2026-03-14",
-                    lieu: "Arrivée France",
-                    pays: "France",
-                    coordonnees: "",
-                    hotel: "Arrivée à Paris",
-                    activites: [
-                        { time: "04:45", title: "Arrivée Dubai", description: "Atterrissage à l'aéroport de Dubai" },
-                        { time: "05:30", title: "Escale à Dubai", description: "Correspondance pour le vol EK073" },
-                        { time: "07:50", title: "Vol EK073 Dubai → Paris", description: "Décollage pour Paris CDG" },
-                        { time: "12:25", title: "Arrivée Paris CDG", description: "Atterrissage à Paris CDG - Fin du voyage" }
+                    id: 22,
+                    date: new Date('2026-03-13'),
+                    country: 'International',
+                    location: 'Vol Retour',
+                    coords: [14.51, 121.01],
+                    hotel: { name: "Nuit à bord", room: "Vol EK335", link: "#" },
+                    challenge: { title: "👋 Adieu", desc: "Dernière photo", hint: "Aéroport" },
+                    activities: [
+                        { time: "14:00", title: "Check-out", desc: "Départ", coords: [9.5483, 123.7764] },
+                        { time: "18:50", title: "Vol Manille", desc: "Départ", coords: [14.51, 121.01] }
                     ],
-                    pointsInteret: [
-                        { nom: "Aéroport de Dubai", description: "Correspondance pour le vol final", type: "airport" },
-                        { nom: "Aéroport Paris CDG", description: "Arrivée en France", type: "airport" }
-                    ]
+                    suggestions: []
+                },
+                {
+                    id: 23,
+                    date: new Date('2026-03-14'),
+                    country: 'France',
+                    location: 'Arrivée Paris',
+                    coords: [48.8566, 2.3522],
+                    hotel: { name: "Maison", room: "Chez vous", link: "#" },
+                    challenge: { title: "🏠 Retour", desc: "Arrivée Paris", hint: "Hall CDG" },
+                    activities: [
+                        { time: "07:50", title: "Vol vers Paris", desc: "EK073", coords: null },
+                        { time: "12:25", title: "Arrivée", desc: "Fin voyage", coords: [49.0097, 2.5479] }
+                    ],
+                    suggestions: []
                 }
             ],
             hotels: [
-                {
-                    nom: "The B Ginza",
-                    ville: "Tokyo",
-                    pays: "Japon",
-                    typeChambre: "Chambre Double en Angle",
-                    services: ["Wi-Fi gratuit", "Room service", "Concierge", "Service de nettoyage quotidien", "Climatisation"],
-                    equipements: ["Salle de sport", "Business center", "Restaurant", "Bar", "Salle de réunion"],
-                    checkIn: "15:00",
-                    checkOut: "11:00",
-                    coordonnees: "35.6715,139.7630"
+                { 
+                    name: "The B Ginza", city: "Tokyo", stars: 4,
+                    coords: [35.6695, 139.7615],
+                    checkIn: "15:00", checkOut: "11:00",
+                    amenities: ["Wifi", "Café gratuit", "Clim", "Centre ville"],
+                    desc: "Hôtel moderne au cœur du quartier chic de Ginza. Idéal pour le shopping et les dîners."
                 },
-                {
-                    nom: "Winery Hotel and Condominium Furano",
-                    ville: "Furano",
-                    pays: "Japon",
-                    typeChambre: "Chambre Twin Standard Hollywood",
-                    services: ["Petit-déjeuner inclus", "Service de ski", "Location d'équipement", "Service de navette", "Onsen privé"],
-                    equipements: ["Cuisinette", "Lave-linge", "Chauffage au sol", "Parking gratuit", "Restaurant", "Spa"],
-                    checkIn: "14:00",
-                    checkOut: "10:00",
-                    coordonnees: "43.3421,142.3830"
+                { 
+                    name: "Winery Hotel Furano", city: "Furano", stars: 4,
+                    coords: [43.3421, 142.3832],
+                    checkIn: "15:00", checkOut: "10:00",
+                    amenities: ["Onsen", "Vue Montagne", "Navette Ski", "Restaurant"],
+                    desc: "Hôtel perché avec vue panoramique sur les montagnes et vignobles."
                 },
-                {
-                    nom: "Hôtel à Kyoto (à déterminer)",
-                    ville: "Kyoto",
-                    pays: "Japon",
-                    typeChambre: "À déterminer",
-                    services: ["Wi-Fi gratuit", "Service de nettoyage", "Climatisation", "À déterminer"],
-                    equipements: ["À déterminer"],
-                    checkIn: "15:00",
-                    checkOut: "11:00",
-                    coordonnees: "35.0116,135.7681"
+                { 
+                    name: "Insomnia KYOTO OIKE", city: "Kyoto", stars: 4,
+                    coords: [35.0116, 135.7600], 
+                    checkIn: "14:00", checkOut: "11:00",
+                    amenities: ["Design", "Wifi", "Bar 24h", "Central"],
+                    desc: "Hôtel moderne et artistique idéalement situé près du marché Nishiki et des transports."
                 },
-                {
-                    nom: "Fox & The Firefly",
-                    ville: "Bohol",
-                    pays: "Philippines",
-                    typeChambre: "Chambre écologique",
-                    services: ["Petit-déjeuner inclus", "Observation lucioles", "Guide local", "Navette"],
-                    equipements: ["Terrasse", "Vue sur rivière", "Restaurant", "Espace détente"],
-                    checkIn: "14:00",
-                    checkOut: "12:00",
-                    coordonnees: "9.8499,124.1435"
+                { 
+                    name: "Fox & The Firefly", city: "Loboc", stars: 3,
+                    coords: [9.6378, 124.0331],
+                    checkIn: "14:00", checkOut: "12:00",
+                    amenities: ["Eco-Lodge", "Bord rivière", "Nature", "Paddle"],
+                    desc: "Cottages en bambou au bord de la rivière Loboc. Ambiance nature et déconnectée."
                 },
-                {
-                    nom: "Amorita Resort",
-                    ville: "Bohol",
-                    pays: "Philippines",
-                    typeChambre: "Chambre vue mer",
-                    services: ["Petit-déjeuner inclus", "Service de plage", "Navette Alona Beach", "Concierge", "Room service"],
-                    equipements: ["Piscine", "Spa", "Restaurant", "Bar", "Plage privée", "Centre de plongée"],
-                    checkIn: "14:00",
-                    checkOut: "12:00",
-                    coordonnees: "9.5799,123.8435"
+                { 
+                    name: "Amorita Resort", city: "Panglao", stars: 5,
+                    coords: [9.5483, 123.7764],
+                    checkIn: "14:00", checkOut: "12:00",
+                    amenities: ["Infinity Pool", "Plage privée", "Spa", "Plongée"],
+                    desc: "Luxe discret sur une falaise surplombant la plage d'Alona. Calme et volupté."
                 }
             ]
         };
 
-        // Données pour le convertisseur de devises - initialisées avec des valeurs par défaut
-        const currencyData = {
-            rates: {
-                EUR_JPY: 160.50,
-                JPY_EUR: 0.00623,
-                EUR_PHP: 60.25,
-                PHP_EUR: 0.0166
-            },
-            lastUpdate: new Date().toLocaleDateString('fr-FR'),
-            googleSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLLj3YWEjnNtTwjxM_6CZCB354sMQFQNaW0JkldsHsr-NFn7nHXQ6oxM73bUuuEbPMxTftpnkHb7fy/pub?gid=0&single=true&output=csv'
-        };
+        let currentDayIndex = 0;
+        let map = null;
+        let exchangeRates = { "EUR-JPY": 162.50, "JPY-EUR": 0.0061, "EUR-PHP": 61.20, "PHP-EUR": 0.016 };
 
-        // Variables globales
-        let map;
-        let markers = [];
-        let currentLayer = 'activities';
-
-        // Fonction pour formater la date en français
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            const options = { weekday: 'long', day: 'numeric', month: 'long' };
-            return date.toLocaleDateString('fr-FR', options);
-        }
-
-        // Fonction pour formater l'heure
-        function formatTime(timeStr) {
-            return timeStr;
-        }
-
-        // Fonction pour générer le lien Google Maps
-        function getMapsLink(coordinates, placeName) {
-            if (!coordinates) {
-                return "#";
-            }
-            return `https://www.google.com/maps/search/?api=1&query=${coordinates}&query_place=${encodeURIComponent(placeName)}`;
-        }
-
-        // Fonction pour générer le lien d'itinéraire Google Maps
-        function getDirectionsLink(coordinates, placeName) {
-            if (!coordinates) {
-                return "#";
-            }
-            return `https://www.google.com/maps/dir/?api=1&destination=${coordinates}&destination_place=${encodeURIComponent(placeName)}`;
-        }
-
-        // Compte à rebours
-        function updateCountdown() {
-            const targetDate = new Date('2026-02-20T18:50:00').getTime();
-            const now = new Date().getTime();
-            const timeLeft = targetDate - now;
-
-            if (timeLeft > 0) {
-                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-
-                document.getElementById('countdown-days').textContent = days.toString().padStart(2, '0');
-                document.getElementById('countdown-hours').textContent = hours.toString().padStart(2, '0');
-                document.getElementById('countdown-minutes').textContent = minutes.toString().padStart(2, '0');
-            } else {
-                document.querySelector('.countdown-title').textContent = 'Le voyage a commencé !';
-                document.querySelector('.countdown-timer').style.display = 'none';
-            }
-        }
-
-        // Initialisation de l'application
-        document.addEventListener('DOMContentLoaded', function() {
-            // Démarrer le compte à rebours
-            updateCountdown();
-            setInterval(updateCountdown, 60000);
-
-            // Gérer le bouton d'entrée
-            document.getElementById('enter-site').addEventListener('click', function() {
-                document.getElementById('home-page').style.display = 'none';
-                document.getElementById('content-pages').style.display = 'block';
-                initializeApp();
-            });
-
-            // Gérer le bouton de retour à l'accueil
-            document.getElementById('back-home').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('content-pages').style.display = 'none';
-                document.getElementById('home-page').style.display = 'flex';
-                closeMenu();
-            });
-
-            // Gérer le menu
-            document.getElementById('menu-toggle').addEventListener('click', openMenu);
-            document.getElementById('close-menu').addEventListener('click', closeMenu);
-
-            // Fermer le menu en cliquant à l'extérieur
-            document.addEventListener('click', function(e) {
-                const navMenu = document.getElementById('nav-menu');
-                const menuToggle = document.getElementById('menu-toggle');
-                
-                if (navMenu.classList.contains('active') && 
-                    !navMenu.contains(e.target) && 
-                    !menuToggle.contains(e.target)) {
-                    closeMenu();
-                }
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            startCountdown();
+            renderDayNav();
+            renderDay(0);
+            renderHotels();
+            setupSwipe();
+            updateAIContext(); // Initialise AI context
         });
 
-        // Initialiser l'application après l'entrée
-        function initializeApp() {
-            // Générer les options du menu déroulant des jours
-            const dayDropdown = document.getElementById('day-dropdown');
-            voyageData.jours.forEach((jour, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `${formatDate(jour.date)} - ${jour.lieu}`;
-                dayDropdown.appendChild(option);
-            });
-
-            // Générer les options du menu déroulant des villes
-            const cityDropdown = document.getElementById('city-dropdown');
-            const villesUniques = [...new Set(voyageData.jours.map(jour => jour.lieu))];
-            villesUniques.forEach(ville => {
-                const option = document.createElement('option');
-                option.value = ville;
-                option.textContent = ville;
-                cityDropdown.appendChild(option);
-            });
-
-            // Charger la sélection du jour sauvegardée
-            loadDaySelection();
-
-            // Gérer le changement de sélection dans le menu déroulant des jours
-            dayDropdown.addEventListener('change', function() {
-                const index = parseInt(this.value);
-                if (!isNaN(index)) {
-                    saveDaySelection(index);
-                    showDayDetails(index);
-                } else {
-                    document.getElementById('day-details').innerHTML = `
-                        <div style="text-align: center; padding: 2rem; color: #666;">
-                            <p>Sélectionnez un jour dans le menu déroulant pour voir les détails</p>
-                        </div>
-                    `;
+        function startCountdown() {
+            const update = () => {
+                const now = new Date().getTime();
+                const distance = DATE_DEPART.getTime() - now;
+                if (distance < 0) {
+                    document.getElementById('countdown-display').innerHTML = "<h3>EN VOYAGE ! ✈️</h3>";
+                    document.getElementById("header-date").innerText = "J-0";
+                    return;
                 }
-            });
-
-            // Gérer le changement de sélection dans le menu déroulant des villes
-            cityDropdown.addEventListener('change', function() {
-                generatePointsInteret(this.value);
-            });
-
-            // Initialiser le convertisseur de devises
-            initializeCurrencyConverter();
-
-            // Gérer la navigation entre les pages
-            document.querySelectorAll('.menu-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const pageId = this.dataset.page;
-                    showPage(pageId);
-                    closeMenu();
-                });
-            });
-
-            // Gérer les boutons de contrôle de la carte
-            document.querySelectorAll('.map-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.map-btn').forEach(b => {
-                        b.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                    currentLayer = this.dataset.layer;
-                    updateMapLayer();
-                });
-            });
-
-            // Afficher la première page
-            showPage('planning');
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById("cd-days").innerText = days < 10 ? "0"+days : days;
+                document.getElementById("cd-hours").innerText = hours < 10 ? "0"+hours : hours;
+                document.getElementById("cd-minutes").innerText = minutes < 10 ? "0"+minutes : minutes;
+                document.getElementById("header-date").innerText = "J-" + days;
+            };
+            setInterval(update, 1000);
+            update();
         }
 
-        // Fonction pour afficher une page spécifique
-        function showPage(pageId) {
-            // Masquer toutes les pages
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
+        function renderDayNav() {
+            const select = document.getElementById('day-select');
+            select.innerHTML = "";
+            voyageData.days.forEach((day, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.text = `Jour ${day.id} - ${day.date.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})}`;
+                select.appendChild(opt);
             });
-            
-            // Désactiver tous les liens de menu
-            document.querySelectorAll('.menu-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Afficher la page sélectionnée
-            document.getElementById(`${pageId}-page`).classList.add('active');
-            
-            // Activer le lien de menu correspondant
-            document.querySelector(`.menu-link[data-page="${pageId}"]`).classList.add('active');
-            
-            // Initialiser des composants spécifiques si nécessaire
-            if (pageId === 'points-interet') {
-                generatePointsInteret();
-            }
-            
-            if (pageId === 'carte') {
-                initMap();
-            }
-            
-            if (pageId === 'hotels') {
-                generateHotelServices();
-            }
-            
-            if (pageId === 'convertisseur') {
-                updateCurrencyDisplay();
+        }
+
+        function selectDay(index, direction = null) { 
+            currentDayIndex = parseInt(index); 
+            renderDay(currentDayIndex, direction);
+            updateAIContext(); // Update AI Context when day changes
+        }
+        
+        function changeDay(offset, direction = null) {
+            let newIndex = currentDayIndex + offset;
+            if(newIndex >= 0 && newIndex < voyageData.days.length) {
+                if (!direction) direction = offset > 0 ? 'right' : 'left';
+                selectDay(newIndex, direction);
+                document.getElementById('day-select').value = newIndex;
             }
         }
 
-        // Fonction pour ouvrir le menu
-        function openMenu() {
-            document.getElementById('nav-menu').classList.add('active');
-        }
-
-        // Fonction pour fermer le menu
-        function closeMenu() {
-            document.getElementById('nav-menu').classList.remove('active');
-        }
-
-        // Fonction pour afficher les détails d'un jour spécifique
-        function showDayDetails(index) {
-            const jour = voyageData.jours[index];
-            const dayDetails = document.getElementById('day-details');
+        function renderDay(index, direction = null) {
+            const day = voyageData.days[index];
+            const container = document.getElementById('day-content');
+            const themeClass = day.country === 'Japon' ? 'bg-jp' : (day.country === 'Philippines' ? 'bg-ph' : 'bg-intl');
+            const isChallengeDone = localStorage.getItem('challenge_'+day.id) === 'true';
             
-            let html = `
-                <div class="day-header">
-                    <div class="date">${formatDate(jour.date)}</div>
-                    <div class="location">
-                        <span class="country-badge ${jour.pays === 'Japon' ? 'japan-badge' : jour.pays === 'Philippines' ? 'philippines-badge' : ''}">${jour.pays}</span>
-                        <a href="${getDirectionsLink(jour.coordonnees, jour.lieu)}" target="_blank" title="Voir l'itinéraire vers ${jour.lieu}">
-                            <span class="map-icon">📍</span> ${jour.lieu}
-                        </a>
+            let animClass = '';
+            if (direction === 'right') animClass = 'slide-in-right';
+            if (direction === 'left') animClass = 'slide-in-left';
+
+            let suggestionsHtml = "";
+            if(day.suggestions && day.suggestions.length > 0) {
+                suggestionsHtml = `
+                    <div style="margin-top:20px; background:#fff3e0; padding:15px; border-radius:12px; border-left:4px solid var(--suggestion);">
+                        <h4 style="margin-bottom:10px; color:#e65100;"><i class="fas fa-lightbulb"></i> Idées temps libre</h4>
+                        ${day.suggestions.map(s => `<div style="margin-bottom:5px;"><strong><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.title + " " + day.location)}" target="_blank" class="map-link">${s.title} <i class="fas fa-external-link-alt map-icon-small"></i></a></strong>: ${s.desc}</div>`).join('')}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="day-card ${animClass}">
+                    <div class="day-header ${themeClass}">
+                        <div>
+                            <h2>${day.date.toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long'})}</h2>
+                            <p><i class="fas fa-map-marker-alt"></i> ${day.location}</p>
+                        </div>
+                        <i class="fas ${day.country === 'Japon' ? 'fa-torii-gate' : (day.country === 'Philippines' ? 'fa-sun' : 'fa-plane')} fa-2x"></i>
+                    </div>
+                    
+                    <div class="challenge-card ${isChallengeDone ? 'completed' : ''}" id="chal-${day.id}">
+                        <div class="challenge-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                            <i class="fas fa-camera"></i> 
+                            <strong style="flex:1">${isChallengeDone ? 'Souvenir créé !' : day.challenge.title}</strong>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="challenge-body">
+                            <p>${day.challenge.desc}</p>
+                            <small style="display:block; margin:10px 0; opacity:0.8;">💡 ${day.challenge.hint}</small>
+                            ${!isChallengeDone ? `
+                                <button onclick="completeChallenge(${day.id})" style="background:white; color:#333; border:none; padding:8px 15px; border-radius:20px; font-weight:bold; cursor:pointer; margin-top:5px;">
+                                    📸 Valider le défi
+                                </button>` 
+                            : ''}
+                        </div>
+                    </div>
+
+                    <div class="timeline">
+                        ${day.activities.map(act => `
+                            <div class="activity">
+                                <div style="color:var(--primary);font-weight:bold;">${act.time}</div>
+                                <strong>
+                                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.title + " " + day.location)}" target="_blank" class="map-link">
+                                        ${act.title} <i class="fas fa-external-link-alt map-icon-small"></i>
+                                    </a>
+                                </strong>
+                                <p style="font-size:0.9rem; color:#666;">${act.desc}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    ${suggestionsHtml}
+
+                    <div class="hotel-card">
+                        <strong>🏨 <a href="${day.hotel.link}" target="_blank" class="map-link">${day.hotel.name} <i class="fas fa-external-link-alt map-icon-small"></i></a></strong><br>
+                        <span style="font-size:0.9rem">${day.hotel.room}</span>
                     </div>
                 </div>
-                <div class="activities">
             `;
-            
-            // Ajouter les activités
-            jour.activites.forEach(activite => {
-                const mapsLink = activite.mapsLink && activite.coordinates ? 
-                    `<a href="${getDirectionsLink(activite.coordinates, activite.title)}" target="_blank" title="Voir l'itinéraire vers ${activite.title}" class="place-link">📌 Itinéraire</a>` : '';
-                
-                html += `
-                    <div class="activity">
-                        <div class="time">${formatTime(activite.time)}</div>
-                        <div class="activity-details">
-                            <div class="activity-title">${activite.title}</div>
-                            <div class="activity-desc">${activite.description} ${mapsLink}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += `</div>`;
-            
-            // Ajouter l'information sur l'hôtel
-            if (jour.hotel && jour.hotel !== "N/A") {
-                const hotel = voyageData.hotels.find(h => h.nom === jour.hotel);
-                const hotelCoords = hotel ? hotel.coordonnees : jour.coordonnees;
-                const hotelLink = hotelCoords ? 
-                    `<a href="${getDirectionsLink(hotelCoords, jour.hotel)}" target="_blank" title="Voir l'itinéraire vers ${jour.hotel}" class="place-link">📌 Itinéraire</a>` : '';
-                
-                html += `
-                    <div class="hotel-info">
-                        <div class="hotel-name">Hébergement : ${jour.hotel} ${hotelLink}</div>
-                        ${hotel && hotel.typeChambre ? `<div class="room-type">${hotel.typeChambre}</div>` : ''}
-                    </div>
-                `;
-            }
-            
-            // Ajouter les points d'intérêt à proximité
-            if (jour.pointsInteret && jour.pointsInteret.length > 0) {
-                html += `
-                    <div class="nearby-places">
-                        <div class="nearby-title">
-                            📍 Points d'intérêt à proximité de ${jour.lieu}
-                        </div>
-                        <div class="places-grid">
-                `;
-                
-                jour.pointsInteret.forEach(place => {
-                    const placeLink = place.mapsLink ? 
-                        `<a href="${getDirectionsLink(place.coordonnees, place.nom)}" target="_blank" title="Voir l'itinéraire vers ${place.nom}" class="place-link">📌 Itinéraire</a>` : '';
-                    
-                    html += `
-                        <div class="place-card">
-                            <div class="place-name">
-                                ${place.nom}
-                            </div>
-                            <div class="place-desc">${place.description} ${placeLink}</div>
-                        </div>
-                    `;
-                });
-                
-                html += `
-                        </div>
-                    </div>
-                `;
-            }
-            
-            dayDetails.innerHTML = html;
         }
 
-        // Fonction pour générer la section Points d'Intérêt
-        function generatePointsInteret(villeSelectionnee = 'all') {
-            const pointsInteretList = document.getElementById('points-interet-list');
-            let html = '';
-            
-            // Grouper les points d'intérêt par ville
-            const villes = {};
-            voyageData.jours.forEach(jour => {
-                if (!villes[jour.lieu]) {
-                    villes[jour.lieu] = {
-                        pays: jour.pays,
-                        coordonnees: jour.coordonnees,
-                        pointsInteret: []
-                    };
-                }
-                
-                // Éviter les doublons
-                jour.pointsInteret.forEach(place => {
-                    if (!villes[jour.lieu].pointsInteret.some(p => p.nom === place.nom)) {
-                        villes[jour.lieu].pointsInteret.push(place);
-                    }
-                });
-            });
-            
-            // Générer le HTML pour chaque ville
-            for (const [ville, data] of Object.entries(villes)) {
-                // Filtrer par ville sélectionnée
-                if (villeSelectionnee !== 'all' && ville !== villeSelectionnee) {
-                    continue;
-                }
-                
-                if (data.pointsInteret.length > 0) {
-                    html += `
-                        <div class="day-details" style="margin-bottom: 2rem;">
-                            <div class="day-header">
-                                <div class="date">
-                                    <a href="${getDirectionsLink(data.coordonnees, ville)}" target="_blank" title="Voir l'itinéraire vers ${ville}">
-                                        ${ville}
-                                    </a>
-                                </div>
-                                <div class="location">
-                                    <span class="country-badge ${data.pays === 'Japon' ? 'japan-badge' : data.pays === 'Philippines' ? 'philippines-badge' : ''}">${data.pays}</span>
-                                </div>
-                            </div>
-                            <div class="places-grid">
-                    `;
-                    
-                    data.pointsInteret.forEach(place => {
-                        const placeLink = place.mapsLink ? 
-                            `<a href="${getDirectionsLink(place.coordonnees, place.nom)}" target="_blank" title="Voir l'itinéraire vers ${place.nom}" class="place-link">📌 Itinéraire</a>` : '';
+        function completeChallenge(id) {
+            localStorage.setItem('challenge_'+id, 'true');
+            renderDay(currentDayIndex);
+            if(navigator.vibrate) navigator.vibrate(200);
+        }
+        
+        function renderHotels() {
+             const list = document.getElementById('hotels-list');
+             if (list) {
+                 list.innerHTML = voyageData.hotels.map(h => `
+                    <div class="day-card" style="padding:15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="margin:0;">${h.name}</h3>
+                            <div style="color:#fbc02d;">${"⭐".repeat(h.stars)}</div>
+                        </div>
+                        <p style="color:#666; margin:5px 0;"><i class="fas fa-map-pin"></i> ${h.city}</p>
+                        <p style="font-size:0.9rem; margin-bottom:10px;">${h.desc}</p>
                         
-                        html += `
-                            <div class="place-card">
-                                <div class="place-name">
-                                    ${place.nom}
-                                </div>
-                                <div class="place-desc">${place.description} ${placeLink}</div>
+                        <div class="hotel-details">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                <span>🕒 Check-in: <strong>${h.checkIn}</strong></span>
+                                <span>Check-out: <strong>${h.checkOut}</strong></span>
                             </div>
-                        `;
-                    });
-                    
-                    html += `
+                            <div style="margin-top:8px;">
+                                ${h.amenities.map(a => `<span class="hotel-badge">${a}</span>`).join('')}
                             </div>
                         </div>
-                    `;
-                }
-            }
-            
-            if (html === '') {
-                html = '<p style="text-align: center; padding: 2rem; color: #666;">Aucun point d\'intérêt trouvé pour cette ville.</p>';
-            }
-            
-            pointsInteretList.innerHTML = html;
+                    </div>
+                 `).join('');
+             }
         }
 
-        // Fonction pour initialiser la carte
         function initMap() {
-            // Initialiser la carte Leaflet
-            map = L.map('map').setView([25, 135], 4); // Centré sur une position médiane
+            if(map) return;
+            map = L.map('map-container').setView([25, 130], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: 'OSM'}).addTo(map);
             
-            // Ajouter plusieurs types de fonds de carte
-            const baseLayers = {
-                "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }),
-                "Satellite": L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                    attribution: '© Google Satellite',
-                    subdomains: ['mt0','mt1','mt2','mt3']
-                })
-            };
-            
-            baseLayers["OpenStreetMap"].addTo(map);
-            
-            // Ajouter le contrôle des layers
-            L.control.layers(baseLayers).addTo(map);
-            
-            updateMapLayer();
-        }
-
-        // Fonction pour mettre à jour les couches de la carte
-        function updateMapLayer() {
-            // Supprimer tous les marqueurs existants
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
-            
-            // Ajouter les marqueurs en fonction de la couche sélectionnée
-            if (currentLayer === 'activities' || currentLayer === 'all') {
-                voyageData.jours.forEach(jour => {
-                    jour.activites.forEach(activite => {
-                        if (activite.coordinates) {
-                            const [lat, lng] = activite.coordinates.split(',').map(coord => parseFloat(coord.trim()));
-                            const marker = L.marker([lat, lng], {
-                                icon: L.divIcon({
-                                    className: 'activity-marker',
-                                    html: '📍',
-                                    iconSize: [25, 25]
-                                })
-                            })
-                            .addTo(map)
-                            .bindPopup(`
-                                <b>${activite.title}</b><br>
-                                ${activite.description}<br>
-                                <em>${formatTime(activite.time)} - ${jour.lieu}</em>
-                                <br><a href="${getDirectionsLink(activite.coordinates, activite.title)}" target="_blank">📌 Itinéraire</a>
-                            `);
-                            markers.push(marker);
-                        }
+            // 1. Hôtels (Bleu)
+            voyageData.hotels.forEach(h => {
+                if(h.coords) {
+                    const icon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div class="marker-pin" style="background:#2196f3;"><i class="fas fa-bed"></i></div>`,
+                        iconSize: [30, 42], iconAnchor: [15, 42]
                     });
-                });
-            }
-            
-            if (currentLayer === 'hotels' || currentLayer === 'all') {
-                voyageData.hotels.forEach(hotel => {
-                    if (hotel.coordonnees) {
-                        const [lat, lng] = hotel.coordonnees.split(',').map(coord => parseFloat(coord.trim()));
-                        const marker = L.marker([lat, lng], {
-                            icon: L.divIcon({
-                                className: 'hotel-marker',
-                                html: '🏨',
-                                iconSize: [25, 25]
-                            })
-                        })
-                        .addTo(map)
-                        .bindPopup(`
-                            <b>${hotel.nom}</b><br>
-                            ${hotel.ville}, ${hotel.pays}<br>
-                            ${hotel.typeChambre}<br>
-                            Check-in: ${hotel.checkIn} | Check-out: ${hotel.checkOut}
-                            <br><a href="${getDirectionsLink(hotel.coordonnees, hotel.nom)}" target="_blank">📌 Itinéraire</a>
-                        `);
-                        markers.push(marker);
-                    }
-                });
-            }
-            
-            if (currentLayer === 'interest' || currentLayer === 'all') {
-                voyageData.jours.forEach(jour => {
-                    jour.pointsInteret.forEach(place => {
-                        if (place.coordonnees && place.mapsLink) {
-                            const [lat, lng] = place.coordonnees.split(',').map(coord => parseFloat(coord.trim()));
-                            const marker = L.marker([lat, lng], {
-                                icon: L.divIcon({
-                                    className: 'interest-marker',
-                                    html: '⭐',
-                                    iconSize: [20, 20]
-                                })
-                            })
-                            .addTo(map)
-                            .bindPopup(`
-                                <b>${place.nom}</b><br>
-                                ${place.description}<br>
-                                <em>${jour.lieu}, ${jour.pays}</em>
-                                <br><a href="${getDirectionsLink(place.coordonnees, place.nom)}" target="_blank">📌 Itinéraire</a>
-                            `);
-                            markers.push(marker);
-                        }
-                    });
-                });
-            }
-        }
-
-        // Fonction pour générer le tableau des services hôteliers
-        function generateHotelServices() {
-            const hotelServicesBody = document.getElementById('hotel-services-body');
-            let html = '';
-            
-            voyageData.hotels.forEach(hotel => {
-                const mapsLink = hotel.coordonnees ? 
-                    `<a href="${getDirectionsLink(hotel.coordonnees, hotel.nom)}" target="_blank" title="Voir l'itinéraire vers ${hotel.nom}" class="place-link">📌 Itinéraire</a>` : '';
-                
-                // Ajouter une classe spéciale pour l'hôtel de Kyoto non choisi
-                const isUndecided = hotel.nom.includes("à déterminer");
-                const rowClass = isUndecided ? 'undecided-hotel' : '';
-                
-                html += `
-                    <tr class="${rowClass}">
-                        <td>
-                            <strong>${hotel.nom}</strong>
-                            ${isUndecided ? '<span class="warning-badge">À choisir</span>' : ''}
-                            <br>${mapsLink}
-                        </td>
-                        <td>${hotel.ville}, ${hotel.pays}</td>
-                        <td>${hotel.typeChambre}</td>
-                        <td>
-                            ${hotel.services.map(service => `<span class="service-badge">${service}</span>`).join('')}
-                        </td>
-                        <td>
-                            ${hotel.equipements.map(equipement => `<span class="service-badge">${equipement}</span>`).join('')}
-                        </td>
-                        <td>${hotel.checkIn} / ${hotel.checkOut}</td>
-                    </tr>
-                `;
+                    L.marker(h.coords, {icon: icon}).addTo(map).bindPopup(`<b>${h.name}</b><br>Hôtel`);
+                }
             });
-            
-            hotelServicesBody.innerHTML = html;
-        }
 
-        // Fonction pour récupérer les taux de change depuis Google Sheets
-        async function fetchExchangeRates() {
-            const updateButton = document.getElementById('update-rates');
-            const updateText = document.getElementById('update-text');
-            const updateLoading = document.getElementById('update-loading');
-            
-            // Afficher l'indicateur de chargement
-            updateText.textContent = 'Mise à jour...';
-            updateLoading.style.display = 'inline-block';
-            updateButton.disabled = true;
-            
-            try {
-                const response = await fetch(currencyData.googleSheetUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-                
-                const csvData = await response.text();
-                const lines = csvData.split('\n');
-                
-                // Les taux sont organisés comme suit dans votre Google Sheets:
-                // B1: EUR/JPY, B2: JPY/EUR, B3: EUR/PHP, B4: PHP/EUR
-                if (lines.length >= 4) {
-                    // Extraire les valeurs (supprimer les guillemets et espaces)
-                    const eurJpy = parseFloat(lines[0].split(',')[1].replace(/"/g, '').trim());
-                    const jpyEur = parseFloat(lines[1].split(',')[1].replace(/"/g, '').trim());
-                    const eurPhp = parseFloat(lines[2].split(',')[1].replace(/"/g, '').trim());
-                    const phpEur = parseFloat(lines[3].split(',')[1].replace(/"/g, '').trim());
-                    
-                    // Vérifier que les valeurs sont valides
-                    if (!isNaN(eurJpy) && !isNaN(jpyEur) && !isNaN(eurPhp) && !isNaN(phpEur)) {
-                        currencyData.rates.EUR_JPY = eurJpy;
-                        currencyData.rates.JPY_EUR = jpyEur;
-                        currencyData.rates.EUR_PHP = eurPhp;
-                        currencyData.rates.PHP_EUR = phpEur;
-                        currencyData.lastUpdate = new Date().toLocaleString('fr-FR');
-                        
-                        // Mettre à jour l'affichage
-                        updateCurrencyDisplay();
-                        convertCurrency();
-                        
-                        console.log('Taux de change mis à jour avec succès:', currencyData.rates);
-                    } else {
-                        throw new Error('Données de taux invalides dans le CSV');
+            // 2. TOUTES les Activités (Rouge) + Suggestions (Orange)
+            voyageData.days.forEach(d => {
+                // Loop through activities
+                d.activities.forEach(act => {
+                    if(act.coords) {
+                         const iconAct = L.divIcon({
+                            className: 'custom-div-icon',
+                            html: `<div class="marker-pin" style="background:#e91e63;"><i class="fas fa-camera"></i></div>`,
+                            iconSize: [30, 42], iconAnchor: [15, 42]
+                        });
+                        L.marker(act.coords, {icon: iconAct}).addTo(map).bindPopup(`<b>Jour ${d.id}: ${act.title}</b><br>${act.desc}`);
                     }
-                } else {
-                    throw new Error('Format CSV invalide - nombre de lignes insuffisant');
+                });
+
+                // Suggestions
+                if(d.suggestions) {
+                    d.suggestions.forEach(s => {
+                        const iconSugg = L.divIcon({
+                            className: 'custom-div-icon',
+                            html: `<div class="marker-pin" style="background:#ff9800;"><i class="fas fa-lightbulb"></i></div>`,
+                            iconSize: [30, 42], iconAnchor: [15, 42]
+                        });
+                        L.marker(s.coords, {icon: iconSugg}).addTo(map).bindPopup(`<b>Suggestion: ${s.title}</b><br>${s.desc}`);
+                    });
                 }
-                
+            });
+        }
+        
+        /* --- UTILS (Currency, AI, etc.) --- */
+        async function updateRates() {
+            const btn = document.getElementById('btn-update-rates');
+            const info = document.getElementById('rate-info');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLLj3YWEjnNtTwjxM_6CZCB354sMQFQNaW0JkldsHsr-NFn7nHXQ6oxM73bUuuEbPMxTftpnkHb7fy/pub?gid=0&single=true&output=csv';
+            try {
+                const response = await fetch(sheetUrl);
+                const text = await response.text();
+                const rows = text.split('\n').map(row => {
+                    const cols = row.split(',');
+                    return cols.length > 1 ? parseFloat(cols[1]) : parseFloat(cols[0]);
+                });
+                if (rows.length >= 4) {
+                    exchangeRates["EUR-JPY"] = rows[0]; exchangeRates["JPY-EUR"] = rows[1];
+                    exchangeRates["EUR-PHP"] = rows[2]; exchangeRates["PHP-EUR"] = rows[3];
+                    btn.innerHTML = '<i class="fas fa-check"></i> Taux à jour !';
+                    btn.style.background = "var(--success)";
+                    info.innerText = "Dernière mise à jour : " + new Date().toLocaleTimeString();
+                    convertCurrency();
+                    setTimeout(() => { btn.innerHTML = originalText; btn.style.background = "var(--secondary)"; }, 3000);
+                }
             } catch (error) {
-                console.error('Erreur lors de la récupération des taux de change:', error);
-                alert('Erreur lors de la mise à jour des taux. Vérifiez votre connexion Internet.');
-            } finally {
-                // Masquer l'indicateur de chargement
-                updateText.textContent = 'Actualiser les taux';
-                updateLoading.style.display = 'none';
-                updateButton.disabled = false;
+                console.error("Erreur chargement taux:", error);
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erreur';
+                btn.style.background = "#f44336";
             }
         }
 
-        // Fonction pour initialiser le convertisseur de devises
-        function initializeCurrencyConverter() {
-            // Récupérer les taux initiaux
-            fetchExchangeRates();
-            
-            // Ajouter les écouteurs d'événements pour les champs de saisie
-            document.getElementById('converter-amount').addEventListener('input', convertCurrency);
-            document.getElementById('converter-from').addEventListener('change', convertCurrency);
-            document.getElementById('converter-to').addEventListener('change', convertCurrency);
-            
-            // Ajouter l'écouteur pour le bouton d'échange
-            document.getElementById('converter-swap').addEventListener('click', swapCurrencies);
-            
-            // Ajouter l'écouteur pour le bouton de mise à jour
-            document.getElementById('update-rates').addEventListener('click', fetchExchangeRates);
-            
-            // Convertir la valeur initiale
+        function convertCurrency() {
+            const amount = parseFloat(document.getElementById('amount-from').value);
+            const from = document.getElementById('curr-from').value;
+            const to = document.getElementById('curr-to').value;
+            const resultDiv = document.getElementById('conversion-result');
+            if (isNaN(amount)) { resultDiv.innerText = "---"; return; }
+            if (from === to) { resultDiv.innerText = amount.toFixed(2) + " " + to; return; }
+            let rate = 0;
+            const pair = `${from}-${to}`;
+            if (exchangeRates[pair]) { rate = exchangeRates[pair]; } 
+            else {
+                const toEuro = `${from}-EUR`; const fromEuro = `EUR-${to}`;
+                if (exchangeRates[toEuro] && exchangeRates[fromEuro]) { rate = exchangeRates[toEuro] * exchangeRates[fromEuro]; }
+            }
+            if (rate > 0) { resultDiv.innerText = (amount * rate).toFixed(2) + " " + (to === 'JPY' ? '' : '') + to; } 
+            else { resultDiv.innerText = "?"; }
+        }
+
+        function swapCurrency() {
+            const fromEl = document.getElementById('curr-from');
+            const toEl = document.getElementById('curr-to');
+            const temp = fromEl.value; fromEl.value = toEl.value; toEl.value = temp;
             convertCurrency();
         }
 
-        // Fonction pour convertir les devises
-        function convertCurrency() {
-            const amount = parseFloat(document.getElementById('converter-amount').value) || 0;
-            const from = document.getElementById('converter-from').value;
-            const to = document.getElementById('converter-to').value;
+        function setupSwipe() {
+            const container = document.getElementById('day-content');
+            let touchStartX = 0; let touchEndX = 0; const minSwipeDistance = 50;
+            container.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+            container.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
+            function handleSwipe() {
+                const distance = touchEndX - touchStartX;
+                if (Math.abs(distance) < minSwipeDistance) return;
+                if (distance > 0) { changeDay(-1, 'left'); } else { changeDay(1, 'right'); }
+            }
+        }
+
+        function toggleAIModal() { document.getElementById('aiModal').classList.toggle('active'); }
+        
+        function updateAIContext() {
+            const day = voyageData.days[currentDayIndex];
+            const locName = document.getElementById('ai-location-name');
+            const contextBadge = document.getElementById('ai-context-badge');
             
-            if (from === to) {
-                document.getElementById('converter-result-amount').textContent = amount.toFixed(2);
+            if(locName) locName.innerText = day.location;
+            if(contextBadge) contextBadge.innerText = `• ${day.country}`;
+        }
+
+        function askGemini(p){ addMessage("user", p); callGemini(p); }
+        
+        function activateTranslatorMode() {
+            const day = voyageData.days[currentDayIndex];
+            const lang = day.country === 'Japon' ? 'Japonais' : (day.country === 'Philippines' ? 'Tagalog' : 'Anglais');
+            const prompt = `Agis comme un traducteur. Je vais te donner des phrases en français, traduis-les uniquement en ${lang} avec la prononciation. Dis 'Prêt' pour commencer.`;
+            addMessage("user", "Mode Traducteur");
+            callGemini(prompt);
+        }
+        
+        function handleUserSubmit(){ 
+            const input = document.getElementById('aiUserInput');
+            const text = input.value.trim();
+            if(text) { addMessage("user", text); callGemini(text); input.value = ""; }
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('aiUserInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleUserSubmit();
+        });
+
+        function addMessage(sender, text) {
+             const chatBox = document.getElementById('aiChatBox');
+             const msgDiv = document.createElement('div');
+             msgDiv.className = `chat-msg ${sender}`;
+             msgDiv.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+             chatBox.appendChild(msgDiv);
+             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        function addLoading() {
+            const chatBox = document.getElementById('aiChatBox');
+            const loadDiv = document.createElement('div');
+            loadDiv.id = "ai-loading";
+            loadDiv.className = "chat-msg ai typing-dots";
+            loadDiv.innerText = "Réfléchit";
+            chatBox.appendChild(loadDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function removeLoading() {
+            const loadDiv = document.getElementById('ai-loading');
+            if(loadDiv) loadDiv.remove();
+        }
+
+        async function callGemini(prompt) {
+            if (!apiKey) {
+                addMessage("ai", "Erreur: Clé API manquante.");
                 return;
             }
-            
-            let rate;
-            if (from === 'EUR' && to === 'JPY') {
-                rate = currencyData.rates.EUR_JPY;
-            } else if (from === 'EUR' && to === 'PHP') {
-                rate = currencyData.rates.EUR_PHP;
-            } else if (from === 'JPY' && to === 'EUR') {
-                rate = currencyData.rates.JPY_EUR;
-            } else if (from === 'PHP' && to === 'EUR') {
-                rate = currencyData.rates.PHP_EUR;
-            } else if (from === 'JPY' && to === 'PHP') {
-                rate = currencyData.rates.EUR_PHP / currencyData.rates.EUR_JPY;
-            } else if (from === 'PHP' && to === 'JPY') {
-                rate = currencyData.rates.EUR_JPY / currencyData.rates.EUR_PHP;
-            }
-            
-            const result = amount * rate;
-            document.getElementById('converter-result-amount').textContent = result.toFixed(2);
-        }
 
-        // Fonction pour échanger les devises
-        function swapCurrencies() {
-            const from = document.getElementById('converter-from');
-            const to = document.getElementById('converter-to');
-            
-            const temp = from.value;
-            from.value = to.value;
-            to.value = temp;
-            
-            convertCurrency();
-        }
+            const day = voyageData.days[currentDayIndex];
+            const systemContext = `Tu es un guide de voyage expert et romantique pour un couple en lune de miel. 
+            Ils sont actuellement à ${day.location} (${day.country}). C'est le jour ${day.id} de leur voyage (Date: ${day.date.toLocaleDateString()}).
+            Réponds de manière concise, utile et chaleureuse (max 2-3 phrases sauf si demandé autrement).
+            Si c'est une demande de traduction, donne la phrase en langue locale (${day.country === 'Japon' ? 'Japonais' : (day.country === 'Philippines' ? 'Tagalog/Visayan' : 'Anglais')}) et la phonétique.`;
 
-        // Fonction pour mettre à jour l'affichage des taux
-        function updateCurrencyDisplay() {
-            document.getElementById('rate-eur-jpy').textContent = currencyData.rates.EUR_JPY.toFixed(2);
-            document.getElementById('rate-eur-php').textContent = currencyData.rates.EUR_PHP.toFixed(2);
-            document.getElementById('rate-jpy-eur').textContent = currencyData.rates.JPY_EUR.toFixed(6);
-            document.getElementById('rate-php-eur').textContent = currencyData.rates.PHP_EUR.toFixed(6);
-            document.getElementById('last-update').textContent = currencyData.lastUpdate;
-        }
+            const fullPrompt = prompt.replace('VilleActuelle', day.location).replace('PaysActuel', day.country);
 
-        // Fonctions pour la sauvegarde/chargement de la sélection du jour
-        function saveDaySelection(index) {
-            localStorage.setItem('lastSelectedDay', index);
-        }
+            addLoading();
 
-        function loadDaySelection() {
-            const lastIndex = localStorage.getItem('lastSelectedDay');
-            if (lastIndex !== null) {
-                const dayDropdown = document.getElementById('day-dropdown');
-                dayDropdown.value = lastIndex;
-                if (parseInt(lastIndex) >= 0) {
-                    showDayDetails(parseInt(lastIndex));
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: systemContext + "\n\nUser: " + fullPrompt }]
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                removeLoading();
+                
+                if (data.candidates && data.candidates[0].content) {
+                    const reply = data.candidates[0].content.parts[0].text;
+                    addMessage("ai", reply);
+                } else {
+                    addMessage("ai", "Désolé, je n'ai pas pu traiter cette demande.");
                 }
+
+            } catch (error) {
+                removeLoading();
+                addMessage("ai", "Erreur de connexion au service IA.");
+                console.error(error);
             }
+        }
+        
+        function navigate(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            toggleSidebar();
+            if(id === 'map' && map) setTimeout(() => map.invalidateSize(), 200);
+        }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if(overlay) overlay.style.display = document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
+        }
+        function enterApp() {
+            document.getElementById('landing-page').style.transform = 'translateY(-100%)';
+            document.getElementById('app-interface').style.display = 'block';
+            setTimeout(() => { document.getElementById('app-interface').style.opacity = '1'; initMap(); }, 500);
         }
     </script>
 </body>
