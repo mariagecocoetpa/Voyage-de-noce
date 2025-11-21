@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lune de Miel - Japon & Philippines</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
-
+    
     <!-- Leaflet CSS & FontAwesome -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -127,16 +127,38 @@
         .bg-ph { background: var(--philippines); }
         .bg-intl { background: #607d8b; }
         
-        /* OVERVIEW */
+        /* OVERVIEW (VUE D'ENSEMBLE CARROUSEL) */
         #overview { max-width: 100% !important; padding: 20px 0 !important; }
         #overview h2, .overview-controls, .landscape-hint { max-width: 800px; margin-left: auto; margin-right: auto; padding: 0 15px; }
         
         .overview-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .overview-grid { display: flex; overflow-x: auto; gap: 15px; padding: 10px 15px 30px 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
-        .overview-day { flex: 0 0 85%; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 5px solid var(--primary); display: flex; flex-direction: column; scroll-snap-align: center; min-height: 280px; }
         
-        @media (min-width: 768px) { .overview-day { flex: 0 0 28%; } }
-        @media (min-width: 1024px) { .overview-day { flex: 0 0 23%; } }
+        .overview-grid { 
+            display: flex; 
+            overflow-x: auto; 
+            gap: 15px; 
+            padding: 10px 15px 30px 15px; 
+            scroll-behavior: smooth; 
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+        }
+        
+        .overview-day {
+            flex: 0 0 85%; 
+            background: white; border-radius: 12px; padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 5px solid var(--primary);
+            display: flex; flex-direction: column;
+            scroll-snap-align: center;
+            min-height: 280px;
+            transition: transform 0.2s;
+        }
+        
+        @media (min-width: 768px) or (orientation: landscape) {
+            .overview-day { flex: 0 0 28%; scroll-snap-align: start; }
+        }
+        @media (min-width: 1024px) {
+            .overview-day { flex: 0 0 23%; }
+        }
 
         .overview-date { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 1.1rem; }
         .overview-loc { font-size: 0.9rem; color: #666; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
@@ -148,50 +170,24 @@
         .landscape-hint { background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; display: none; }
         @media (orientation: portrait) { .landscape-hint { display: block; } }
 
-        /* --- NOUVEAU DESIGN PAGE VOLS --- */
-        .flight-trip-card {
-            background: white; border-radius: 16px; overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 25px;
-        }
-        .flight-trip-header {
-            background: #f1f5f9; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #e2e8f0;
-        }
+        /* FLIGHTS SECTION */
+        .flight-trip-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        .flight-trip-header { background: #f1f5f9; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
         .flight-trip-title { font-weight: bold; color: var(--secondary); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
         .flight-trip-date { font-size: 0.85rem; color: #64748b; background: white; padding: 4px 10px; border-radius: 20px; }
-        
-        .flight-segment {
-            display: flex; padding: 20px; position: relative;
-        }
-        .flight-segment:not(:last-child)::after {
-            content: ''; position: absolute; bottom: 0; left: 80px; right: 20px; border-bottom: 1px dashed #e2e8f0;
-        }
-        
-        .flight-times-col {
-            display: flex; flex-direction: column; justify-content: space-between;
-            min-width: 60px; text-align: right; padding-right: 15px; border-right: 2px solid var(--primary);
-            position: relative;
-        }
+        .flight-segment { display: flex; padding: 20px; position: relative; }
+        .flight-segment:not(:last-child)::after { content: ''; position: absolute; bottom: 0; left: 80px; right: 20px; border-bottom: 1px dashed #e2e8f0; }
+        .flight-times-col { display: flex; flex-direction: column; justify-content: space-between; min-width: 60px; text-align: right; padding-right: 15px; border-right: 2px solid var(--primary); position: relative; }
         .flight-time { font-weight: 800; font-size: 1.1rem; color: #333; }
         .flight-time-sub { font-size: 0.75rem; color: #999; }
-        
-        /* Points on the timeline */
-        .flight-times-col::before, .flight-times-col::after {
-            content: ''; position: absolute; right: -5px; width: 8px; height: 8px;
-            background: white; border: 2px solid var(--primary); border-radius: 50%;
-        }
+        .flight-times-col::before, .flight-times-col::after { content: ''; position: absolute; right: -5px; width: 8px; height: 8px; background: white; border: 2px solid var(--primary); border-radius: 50%; }
         .flight-times-col::before { top: 5px; }
         .flight-times-col::after { bottom: 5px; }
-
         .flight-info-col { padding-left: 15px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .flight-route { font-size: 1rem; font-weight: bold; margin-bottom: 5px; color: #1e293b; }
         .flight-route span { color: var(--primary); margin: 0 5px; }
         .flight-airline { font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 5px; }
         .flight-badge { background: #e0f2f1; color: #00695c; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-left: auto; }
-        
-        .flight-stopover {
-            background: #fff3e0; color: #e65100; font-size: 0.8rem; padding: 8px; text-align: center; font-weight: bold;
-        }
 
         /* CHALLENGE CARD */
         .challenge-card {
@@ -203,8 +199,9 @@
         .challenge-body.open { display: block; }
         .challenge-card.completed { background: var(--success); }
         
-        /* CAMERA & UI */
+        /* CAMERA INPUT BUTTON */
         .camera-btn-label { display: block; width: 100%; padding: 15px; background: white; color: #333; border-radius: 25px; text-align: center; font-weight: bold; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .camera-btn-label:active { transform: scale(0.98); }
         .undo-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5); padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; margin-left: 10px; }
         .timeline { padding: 10px 20px 25px; }
         .activity { border-left: 3px solid #eee; padding-left: 25px; margin-bottom: 25px; position: relative; }
@@ -221,6 +218,7 @@
 
         /* AI MODAL */
         .ai-fab { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 50%; background: linear-gradient(135deg, #ff4081 0%, #6200ea 100%); color: white; border: none; font-size: 28px; box-shadow: 0 6px 20px rgba(98, 0, 234, 0.4); z-index: 1600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+        .ai-fab:active { transform: scale(0.9); }
         .ai-modal { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); z-index: 1601; padding: 25px 20px; display: none; flex-direction: column; max-height: 85vh; animation: slideUp 0.3s ease-out; }
         .ai-modal.active { display: flex; }
         .ai-chat-box { flex:1; min-height: 200px; overflow-y: auto; background: #f5f7fa; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
@@ -229,7 +227,7 @@
         .ai-badge { font-size: 0.75rem; padding: 4px 8px; background: #eee; border-radius: 10px; color: #555; }
         .ai-badge.active { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
         .ai-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .ai-btn { padding: 15px 10px; border: 1px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .ai-btn { padding: 15px 10px; border: 1px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .chat-msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 16px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
         .chat-msg.user { background: var(--secondary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .chat-msg.ai { background: white; border: 1px solid #e0e0e0; align-self: flex-start; border-bottom-left-radius: 2px; }
@@ -601,7 +599,7 @@
                     ]
                 },
                 {
-                    title: "Vol vers Kyoto : Hokkaido → Kansai",
+                    title: "Vol vers Kyoto: Hokkaido → Kansai",
                     date: "02 Mars 2026",
                     flights: [
                         {
@@ -612,7 +610,7 @@
                     ]
                 },
                 {
-                    title: "Au soleil  : Japon → Philippines",
+                    title: "Au Soleil! : Japon → Philippines",
                     date: "06 Mars 2026",
                     flights: [
                         {
@@ -628,7 +626,7 @@
                     ]
                 },
                 {
-                    title: "Retour vers chaton : Philippines → France",
+                    title: "Patounes en approche : Philippines → France",
                     date: "13 Mars 2026",
                     flights: [
                         {
@@ -1060,24 +1058,34 @@
                 return;
             }
             
+            // Create a summary of the itinerary for the context
+            const itinerarySummary = voyageData.days.map(d => 
+                `J${d.id} (${d.date.toLocaleDateString()}): ${d.location}, ${d.country}`
+            ).join("\n");
+
             const plannedDay = voyageData.days[currentDayIndex];
-            let locationContext = `Planning: ${plannedDay.location} (${plannedDay.country})`;
+            let locationContext = `Planning sélectionné: ${plannedDay.location} (${plannedDay.country})`;
             
             if (realUserLocation) {
-                locationContext = `📍 POSITION RÉELLE GPS: ${realUserLocation.lat}, ${realUserLocation.lng}. Ignorer le planning si la distance est grande.`;
+                locationContext = `📍 POSITION RÉELLE GPS: ${realUserLocation.lat}, ${realUserLocation.lng}`;
             }
 
-            const systemContext = `Tu es un guide de voyage expert et romantique.
-            CONTEXTE ACTUEL:
+            const systemContext = `Tu es un guide de voyage expert et romantique pour une lune de miel au Japon et Philippines.
+            
+            CONTEXTE GÉNÉRAL DU VOYAGE:
+            ${itinerarySummary}
+
+            SITUATION ACTUELLE:
             - ${locationContext}
             - Date réelle: ${new Date().toLocaleString()}
-            - Mode Traducteur: ${isTranslatorMode ? "ACTIF (Traduis tout input utilisateur vers la langue locale du lieu actuel + phonétique)" : "INACTIF"}
+            - Mode Traducteur: ${isTranslatorMode ? "ACTIF" : "INACTIF"}
             
             RÈGLES:
-            1. Si le GPS est fourni, c'est la vérité absolue sur le lieu.
-            2. Le planning fourni est une référence pour répondre aux questions "quel est le programme ?".
-            3. Réponds de manière concise (max 3 phrases) sauf si demandé autrement.
-            4. Si en mode traducteur, ne discute pas, traduis juste.
+            1. Si la date réelle est avant le 20 Fév 2026, tu es en mode "Préparation du voyage". Utilise le planning complet pour aider à organiser.
+            2. Si le GPS est actif, il est prioritaire sur le planning pour les recommandations locales (restaurants, météo).
+            3. Si l'utilisateur pose une question sur le programme futur, réfère-toi au résumé du voyage ci-dessus.
+            4. Réponds de manière concise (max 3 phrases) sauf si demandé autrement.
+            5. Si en mode traducteur, traduis simplement le texte utilisateur vers la langue locale (Japonais ou Anglais/Tagalog selon le pays actuel) avec phonétique.
             `;
 
             const fullPrompt = prompt.replace('VilleActuelle', plannedDay.location).replace('PaysActuel', plannedDay.country);
@@ -1092,11 +1100,15 @@
                 });
                 const data = await response.json();
                 removeLoading();
-                if (data.candidates && data.candidates[0].content) {
+                
+                if (data.error) {
+                    console.error("API Error:", data.error);
+                    addMessage("ai", "Erreur API: " + data.error.message);
+                } else if (data.candidates && data.candidates[0].content) {
                     const reply = data.candidates[0].content.parts[0].text;
                     addMessage("ai", reply);
                 } else {
-                    addMessage("ai", "Désolé, je n'ai pas pu traiter cette demande.");
+                    addMessage("ai", "Désolé, je n'ai pas pu traiter cette demande (Réponse vide).");
                 }
             } catch (error) {
                 removeLoading();
@@ -1107,14 +1119,17 @@
 
         /* --- UTILS --- */
         function setupSwipe() {
+            // Swipe for Planner
             const container = document.getElementById('day-content');
             let touchStartX = 0; let touchEndX = 0; const minSwipeDistance = 50;
             container.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
             container.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(container, 'day'); }, {passive: true});
             
+            // Swipe for Overview
             const overviewContainer = document.getElementById('overview-container');
             let touchStartOverview = 0;
             overviewContainer.addEventListener('touchstart', e => { touchStartOverview = e.changedTouches[0].screenX; }, {passive: true});
+            // Use standard scroll - no custom JS needed as we use native scroll-snap
 
             function handleSwipe(el, mode) {
                 const distance = touchEndX - touchStartX;
