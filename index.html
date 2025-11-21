@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lune de Miel - Japon & Philippines 2026</title>
+    <title>Lune de Miel - Japon & Philippines</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+    
     <!-- Leaflet CSS & FontAwesome -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -126,6 +127,55 @@
         .bg-ph { background: var(--philippines); }
         .bg-intl { background: #607d8b; }
         
+        /* OVERVIEW (VUE D'ENSEMBLE CARROUSEL) */
+        #overview { max-width: 100% !important; padding: 20px 0 !important; } /* Pleine largeur pour le carrousel */
+        #overview h2, .overview-controls, .landscape-hint { max-width: 800px; margin-left: auto; margin-right: auto; padding: 0 15px; }
+        
+        .overview-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        .overview-grid { 
+            display: flex; 
+            overflow-x: auto; 
+            gap: 15px; 
+            padding: 10px 15px 30px 15px; /* Padding bottom pour scrollbar/ombre */
+            scroll-behavior: smooth; 
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+        }
+        
+        .overview-day {
+            flex: 0 0 85%; /* Mobile: 1 jour presque plein */
+            background: white; border-radius: 12px; padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 5px solid var(--primary);
+            display: flex; flex-direction: column;
+            scroll-snap-align: center;
+            min-height: 250px;
+            transition: transform 0.2s;
+        }
+        
+        /* Landscape / Desktop: Voir 4 jours */
+        @media (min-width: 768px) or (orientation: landscape) {
+            .overview-day { flex: 0 0 28%; scroll-snap-align: start; }
+        }
+        @media (min-width: 1024px) {
+            .overview-day { flex: 0 0 23%; } /* ~4 jours */
+        }
+
+        .overview-date { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 1.1rem; }
+        .overview-loc { font-size: 0.9rem; color: #666; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .overview-act-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; max-height: 200px; }
+        .overview-act-item { font-size: 0.85rem; margin-bottom: 6px; display: flex; gap: 6px; }
+        .overview-act-item::before { content: '•'; color: var(--secondary); font-weight: bold; }
+
+        .landscape-hint { 
+            background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; 
+            margin-bottom: 15px; text-align: center; font-size: 0.9rem; display: none;
+            border: 1px solid #bbdefb;
+        }
+        
+        @media (orientation: portrait) { .landscape-hint { display: block; } }
+
         /* CHALLENGE CARD */
         .challenge-card {
             margin: 20px; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
@@ -146,11 +196,9 @@
         }
         .camera-btn-label:active { transform: scale(0.98); }
         
-        /* UNDO BUTTON */
         .undo-btn {
             background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5);
-            padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer;
-            margin-left: 10px;
+            padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; margin-left: 10px;
         }
 
         .timeline { padding: 10px 20px 25px; }
@@ -164,6 +212,28 @@
             box-shadow: 0 0 0 4px white;
         }
         
+        /* CONVERTER OPTIMIZED VERTICAL */
+        .converter-box {
+            background: white; padding: 30px 20px; border-radius: var(--radius);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08); text-align: center;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .currency-row { 
+            display: flex; flex-direction: column; gap: 10px; width: 100%; 
+        }
+        @media (min-width: 480px) {
+            .currency-row { flex-direction: row; }
+        }
+        .currency-select { padding: 16px; border: 1px solid #eee; border-radius: 12px; background: #fcfcfc; font-weight: bold; width: 100%; }
+        .currency-input { padding: 16px; border: 1px solid #eee; border-radius: 12px; font-size: 1.4rem; font-weight: 500; width: 100%; text-align: center; }
+        .btn-update {
+            background: var(--secondary); color: white; border: none; 
+            padding: 15px; border-radius: 12px; cursor: pointer; width: 100%;
+            font-weight: bold; font-size: 1rem; display: flex; 
+            align-items: center; justify-content: center; gap: 10px; 
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3); margin-top: 10px;
+        }
+
         /* AI MODAL */
         .ai-fab {
             position: fixed; bottom: 25px; right: 25px;
@@ -190,6 +260,11 @@
         
         .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .ai-title { font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        
+        /* AI Context Badge */
+        .ai-badge { font-size: 0.75rem; padding: 4px 8px; background: #eee; border-radius: 10px; color: #555; }
+        .ai-badge.active { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
         .ai-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .ai-btn {
             padding: 15px 10px; border: 1px solid #eee; border-radius: 12px;
@@ -215,17 +290,29 @@
         .hotel-card { background: #fffde7; margin: 20px; padding: 20px; border-radius: 12px; border-left: 6px solid #fbc02d; }
         .hotel-badge { display: inline-block; background: white; padding: 4px 10px; border-radius: 20px; margin-right: 6px; margin-bottom: 6px; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05); }
         #map-container { height: 65vh; border-radius: var(--radius); margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .converter-box { background: white; padding: 25px 20px; border-radius: var(--radius); box-shadow: 0 8px 25px rgba(0,0,0,0.08); text-align: center; }
-        .currency-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .currency-select { flex: 1; padding: 14px; border: 1px solid #eee; border-radius: 12px; background: #fcfcfc; font-weight: bold; }
-        .currency-input { flex: 2; padding: 14px; border: 1px solid #eee; border-radius: 12px; font-size: 1.2rem; font-weight: 500; }
-        .btn-update { background: var(--secondary); color: white; border: none; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 1rem; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3); }
         
         /* Map Marker */
         .custom-div-icon { background: transparent; border: none; }
         .marker-pin { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -15px 0 0 -15px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
         .marker-pin::after { content: ''; width: 20px; height: 20px; margin: 5px 0 0 5px; background: #fff; position: absolute; border-radius: 50%; }
         .marker-pin i { transform: rotate(45deg); z-index: 10; font-size: 14px; color: #333; }
+        
+        /* Pulsing User Location Marker */
+        .user-pin {
+            width: 20px; height: 20px; border-radius: 50%; background: #2196f3;
+            border: 3px solid white; box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.3);
+            position: relative;
+        }
+        .user-pin::after {
+            content: ''; width: 100%; height: 100%; border-radius: 50%; background: rgba(33, 150, 243, 0.5);
+            position: absolute; top: 0; left: 0; animation: pulse 2s infinite; z-index: -1;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            70% { transform: scale(2.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
         .typing-dots::after { content: ' . . .'; animation: dots 1.5s infinite; }
         @keyframes dots { 0% { content: ' .'; } 33% { content: ' . .'; } 66% { content: ' . . .'; } }
     </style>
@@ -259,6 +346,7 @@
         <nav id="sidebar">
             <button onclick="toggleSidebar()" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.8rem;padding:10px;color:#666;">&times;</button>
             <a href="#" class="nav-link" onclick="navigate('planner')"><i class="fas fa-calendar-alt"></i> Planning</a>
+            <a href="#" class="nav-link" onclick="navigate('overview')"><i class="fas fa-th-large"></i> Vue Globale</a>
             <a href="#" class="nav-link" onclick="navigate('map')"><i class="fas fa-globe-asia"></i> Carte</a>
             <a href="#" class="nav-link" onclick="navigate('hotels')"><i class="fas fa-hotel"></i> Hébergements</a>
             <a href="#" class="nav-link" onclick="navigate('converter')"><i class="fas fa-exchange-alt"></i> Convertisseur</a>
@@ -277,24 +365,38 @@
             </p>
         </section>
 
-        <!-- 2. CARTE -->
+        <!-- 2. VUE GLOBALE (OVERVIEW) -->
+        <section id="overview" class="section">
+            <h2 style="margin-bottom:15px;">Vue d'ensemble</h2>
+            <div class="landscape-hint"><i class="fas fa-mobile-alt fa-rotate-90"></i> Pivotez pour mieux voir !</div>
+            <div class="overview-controls">
+                <button onclick="scrollOverview('left')" style="background:none;border:none;font-size:1.5rem;"><i class="fas fa-arrow-left"></i></button>
+                <span id="overview-range-label" style="font-weight:bold; font-size:0.9rem;">Planning Complet</span>
+                <button onclick="scrollOverview('right')" style="background:none;border:none;font-size:1.5rem;"><i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div class="overview-grid" id="overview-container">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+        <!-- 3. CARTE -->
         <section id="map" class="section">
             <h2 style="margin-bottom:15px;">🗺️ Carte du Voyage</h2>
             <div class="map-legend" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:15px; font-size:0.85rem;">
                 <span style="display:flex; align-items:center;"><i class="fas fa-circle" style="color:var(--primary); margin-right:5px;"></i> Activités</span>
                 <span style="display:flex; align-items:center;"><i class="fas fa-circle" style="color:var(--secondary); margin-right:5px;"></i> Hôtels</span>
-                <span style="display:flex; align-items:center;"><i class="fas fa-circle" style="color:var(--suggestion); margin-right:5px;"></i> Idées</span>
+                <span style="display:flex; align-items:center;"><i class="fas fa-circle" style="color:#2196f3; margin-right:5px; border:2px solid white; border-radius:50%;"></i> Moi</span>
             </div>
             <div id="map-container"></div>
         </section>
         
-        <!-- 3. HÔTELS -->
+        <!-- 4. HÔTELS -->
         <section id="hotels" class="section">
             <h2 style="margin-bottom:15px;">🏨 Vos Hébergements</h2>
             <div id="hotels-list"></div>
         </section>
 
-        <!-- 4. CONVERTISSEUR -->
+        <!-- 5. CONVERTISSEUR -->
         <section id="converter" class="section">
             <h2 style="margin-bottom:15px;">💱 Convertisseur</h2>
             <div class="converter-box">
@@ -307,7 +409,7 @@
                     <input type="number" id="amount-from" value="100" oninput="convertCurrency()" placeholder="Montant" class="currency-input">
                 </div>
                 
-                <button onclick="swapCurrency()" style="background:none; border:none; font-size:1.5rem; margin:10px 0; cursor:pointer; color:var(--primary); padding:10px;">
+                <button onclick="swapCurrency()" style="background:none; border:none; font-size:1.5rem; margin:5px 0; cursor:pointer; color:var(--primary);">
                     <i class="fas fa-exchange-alt" style="transform: rotate(90deg);"></i>
                 </button>
                 
@@ -317,10 +419,10 @@
                         <option value="PHP">PHP (₱)</option>
                         <option value="EUR">EUR (€)</option>
                     </select>
-                    <div id="conversion-result" style="flex:2; font-size: 1.6rem; font-weight: 800; color: var(--primary); text-align:right; padding-right:10px;">---</div>
+                    <div id="conversion-result" style="flex:1; padding:16px; text-align:center; font-size: 1.6rem; font-weight: 800; color: var(--primary);">---</div>
                 </div>
 
-                <div style="margin-top:25px; border-top:1px solid #eee; padding-top:20px;">
+                <div style="margin-top:25px; border-top:1px solid #eee; padding-top:20px; width:100%;">
                     <button onclick="updateRates()" id="btn-update-rates" class="btn-update">
                         <i class="fas fa-sync-alt"></i> Actualiser les taux
                     </button>
@@ -334,28 +436,31 @@
     <button class="ai-fab" onclick="toggleAIModal()"><i class="fas fa-sparkles"></i></button>
     <div class="ai-modal" id="aiModal">
         <div class="ai-header">
-            <div class="ai-title"><i class="fas fa-robot" style="color:var(--primary);"></i> Assistant Voyage <span style="font-size:0.8rem; color:#888; margin-left:5px;" id="ai-context-badge"></span></div>
+            <div class="ai-title">
+                <i class="fas fa-robot" style="color:var(--primary);"></i> Assistant 
+                <span id="ai-status-badge" class="ai-badge">Planifié</span>
+            </div>
             <button onclick="toggleAIModal()" style="background:none; border:none; font-size:1.5rem; padding:5px;"><i class="fas fa-times"></i></button>
         </div>
         <div class="ai-actions">
-            <button class="ai-btn" onclick="askGemini('Suggère une activité romantique courte et spontanée ici (à VilleActuelle).')">
+            <button class="ai-btn" onclick="askGemini('Suggère une activité romantique courte et spontanée ici.')">
                 <i class="fas fa-heart" style="color:#e91e63;"></i> Romantique
             </button>
-            <button class="ai-btn" onclick="activateTranslatorMode()">
-                <i class="fas fa-language" style="color:#2196f3;"></i> Traducteur
+            <button class="ai-btn" onclick="toggleTranslatorMode()">
+                <i class="fas fa-language" style="color:#2196f3;"></i> <span id="trans-btn-txt">Traducteur</span>
             </button>
-            <button class="ai-btn" onclick="askGemini('Quelle est la spécialité culinaire incontournable à VilleActuelle ?')">
+            <button class="ai-btn" onclick="askGemini('Quelle est la spécialité culinaire incontournable ici ?')">
                 <i class="fas fa-utensils" style="color:#ff9800;"></i> Manger
             </button>
-            <button class="ai-btn" onclick="askGemini('Donne-moi un conseil culturel important ou une erreur à éviter au/en PaysActuel.')">
+            <button class="ai-btn" onclick="askGemini('Donne-moi un conseil culturel important pour ce pays.')">
                 <i class="fas fa-info-circle" style="color:#4caf50;"></i> Culture
             </button>
         </div>
         <div class="ai-chat-box" id="aiChatBox">
-            <div class="chat-msg ai">Bonjour ! Je suis votre guide personnel. Comment puis-je vous aider ?</div>
+            <div class="chat-msg ai">Bonjour ! Je suis votre guide personnel. Si vous activez le GPS, je pourrai être encore plus précis !</div>
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
-            <input type="text" id="aiUserInput" style="flex:1; padding:12px 15px; border:1px solid #ddd; border-radius:25px; font-size:16px;" placeholder="Posez une question...">
+            <input type="text" id="aiUserInput" style="flex:1; padding:12px 15px; border:1px solid #ddd; border-radius:25px; font-size:16px;" placeholder="Message...">
             <button onclick="handleUserSubmit()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
@@ -368,8 +473,10 @@
         
         /* --- STATES --- */
         let realUserLocation = null;
+        let isTranslatorMode = false;
+        let userMarker = null;
         
-        /* --- DONNÉES VOYAGE (Identique version précédente) --- */
+        /* --- DONNÉES VOYAGE --- */
         const voyageData = {
             days: [
                 { id: 1, date: new Date('2026-02-20'), country: 'International', location: 'Vol Paris → Istanbul', coords: [48.8566, 2.3522], hotel: { name: "Nuit à bord", room: "Vol TK1828/TK198", link: "#" }, challenge: { title: "✈️ Premier envol", desc: "Photo coucher soleil avion", hint: "Hublot" }, activities: [{ time: "18:50", title: "Départ Paris CDG", desc: "Vol TK1828", coords: [49.0097, 2.5479] }, { time: "23:30", title: "Nuit à bord", desc: "Vers Istanbul", coords: null }] },
@@ -415,17 +522,20 @@
             renderDay(0);
             renderHotels();
             setupSwipe();
-            initGeo(); // GET USER LOCATION ON LOAD
+            initGeo(); 
             updateAIContext();
+            renderOverview(); // Init overview
         });
 
         /* --- GEOLOCATION --- */
         function initGeo() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
+                navigator.geolocation.watchPosition(
                     (pos) => {
                         realUserLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                         updateAIContext();
+                        // If map is initialized, update/add user marker
+                        if (map) updateUserMarker();
                     },
                     (err) => console.log("GPS Error", err),
                     { enableHighAccuracy: true }
@@ -455,13 +565,16 @@
             update();
         }
 
-        /* --- NAVIGATION & LOGIQUE --- */
+        /* --- NAVIGATION --- */
         function navigate(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             toggleSidebar();
             
-            if(id === 'map' && map) setTimeout(() => map.invalidateSize(), 200);
+            if(id === 'map' && map) {
+                setTimeout(() => map.invalidateSize(), 200);
+                updateUserMarker(); // Ensure user marker is shown if location available
+            }
             if(id === 'converter') updateRates();
         }
         
@@ -471,6 +584,36 @@
             if(overlay) overlay.style.display = document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
         }
 
+        /* --- OVERVIEW LOGIC --- */
+        function renderOverview() {
+            const container = document.getElementById('overview-container');
+            
+            // Render ALL days in one go
+            container.innerHTML = voyageData.days.map(d => `
+                <div class="overview-day" onclick="selectDay(${d.id-1}); navigate('planner')">
+                    <div class="overview-date">${d.date.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'})}</div>
+                    <div class="overview-loc"><i class="fas fa-map-pin"></i> ${d.location}</div>
+                    <div class="overview-act-list">
+                        ${d.activities.map(a => `
+                            <div class="overview-act-item">${a.title}</div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function scrollOverview(direction) {
+            const container = document.getElementById('overview-container');
+            const scrollAmount = container.clientWidth * 0.85; // Scroll by roughly one screen width
+            
+            if(direction === 'left') {
+                container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else {
+                container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+        }
+
+        /* --- PLANNING --- */
         function renderDayNav() {
             const select = document.getElementById('day-select');
             select.innerHTML = "";
@@ -589,7 +732,6 @@
 
         function handleCamera(event, id) {
             if (event.target.files && event.target.files.length > 0) {
-                // Simulate upload success then validate
                 completeChallenge(id);
             }
         }
@@ -626,6 +768,7 @@
             L.control.zoom({position: 'bottomright'}).addTo(map);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: ''}).addTo(map);
             
+            // Hôtels
             voyageData.hotels.forEach(h => {
                 if(h.coords) {
                     const icon = L.divIcon({
@@ -637,6 +780,7 @@
                 }
             });
 
+            // Activités
             voyageData.days.forEach(d => {
                 d.activities.forEach(act => {
                     if(act.coords) {
@@ -659,6 +803,37 @@
                     });
                 }
             });
+            
+            updateUserMarker(); // Check if we can add user marker immediately
+        }
+        
+        function updateUserMarker() {
+            if (!map) return;
+            
+            // Check date conditions: only show if within trip range
+            const now = new Date();
+            const tripStart = voyageData.days[0].date;
+            const tripEnd = voyageData.days[voyageData.days.length - 1].date;
+            
+            // Adding a small buffer (end of the last day)
+            const tripEndBuffer = new Date(tripEnd);
+            tripEndBuffer.setDate(tripEndBuffer.getDate() + 1);
+
+            const isDuringTrip = now >= tripStart && now < tripEndBuffer;
+
+            if (realUserLocation && isDuringTrip) {
+                if (userMarker) {
+                    userMarker.setLatLng([realUserLocation.lat, realUserLocation.lng]);
+                } else {
+                    const userIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div class="user-pin"></div>`,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+                    userMarker = L.marker([realUserLocation.lat, realUserLocation.lng], {icon: userIcon}).addTo(map).bindPopup("Vous êtes ici 📍");
+                }
+            }
         }
         
         /* --- CONVERTISSEUR --- */
@@ -722,48 +897,70 @@
             convertCurrency();
         }
 
-        /* --- UTILITAIRES --- */
-        function setupSwipe() {
-            const container = document.getElementById('day-content');
-            let touchStartX = 0; let touchEndX = 0; const minSwipeDistance = 50;
-            container.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
-            container.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
-            function handleSwipe() {
-                const distance = touchEndX - touchStartX;
-                if (Math.abs(distance) < minSwipeDistance) return;
-                if (distance > 0) { changeDay(-1, 'left'); } else { changeDay(1, 'right'); }
-            }
-        }
-
+        /* --- AI LOGIC --- */
         function toggleAIModal() { document.getElementById('aiModal').classList.toggle('active'); }
         
         function updateAIContext() {
-            const day = voyageData.days[currentDayIndex];
-            const locName = document.getElementById('ai-location-name');
-            const contextBadge = document.getElementById('ai-context-badge');
+            // Determine context: Real Location (GPS) > Real Date (if during trip) > Planned Day
+            const now = new Date();
+            // Check if today is within trip range
+            const tripStart = voyageData.days[0].date;
+            const tripEnd = voyageData.days[voyageData.days.length - 1].date;
+            const isDuringTrip = now >= tripStart && now <= tripEnd;
+
+            let activeDay = voyageData.days[currentDayIndex];
+            let badgeText = "Planifié";
+            let badgeClass = "";
+
+            if (realUserLocation) {
+                badgeText = "📍 GPS Actif";
+                badgeClass = "active";
+            } else if (isDuringTrip) {
+                // Find the actual day object
+                const todayObj = voyageData.days.find(d => d.date.toDateString() === now.toDateString());
+                if (todayObj) {
+                    badgeText = "📅 En direct";
+                    badgeClass = "active";
+                }
+            }
+
+            const badgeEl = document.getElementById('ai-status-badge');
+            badgeEl.innerText = badgeText;
+            badgeEl.className = "ai-badge " + badgeClass;
+        }
+
+        function toggleTranslatorMode() {
+            isTranslatorMode = !isTranslatorMode;
+            const btnTxt = document.getElementById('trans-btn-txt');
+            btnTxt.innerText = isTranslatorMode ? "ON" : "Traducteur";
+            btnTxt.style.fontWeight = isTranslatorMode ? "bold" : "normal";
             
-            if(locName) locName.innerText = day.location;
-            if(contextBadge) {
-                let txt = `• ${day.country}`;
-                if(realUserLocation) txt += " (📍 GPS Actif)";
-                contextBadge.innerText = txt;
+            if(isTranslatorMode) {
+                addMessage("user", "Activation du mode traducteur");
+                callGemini("Je veux que tu traduises tout ce que je dis à partir de maintenant dans la langue locale (Japonais ou Tagalog/Anglais selon le pays), sans que je te le demande à chaque fois. Donne moi juste la traduction et la phonétique.");
+            } else {
+                addMessage("user", "Désactivation du mode traducteur");
+                callGemini("Arrête le mode traduction.");
             }
         }
 
         function askGemini(p){ addMessage("user", p); callGemini(p); }
-        
-        function activateTranslatorMode() {
-            const day = voyageData.days[currentDayIndex];
-            const lang = day.country === 'Japon' ? 'Japonais' : (day.country === 'Philippines' ? 'Tagalog' : 'Anglais');
-            const prompt = `Agis comme un traducteur. Je vais te donner des phrases en français, traduis-les uniquement en ${lang} avec la prononciation. Dis 'Prêt' pour commencer.`;
-            addMessage("user", "Mode Traducteur");
-            callGemini(prompt);
-        }
-        
+        function activateTranslatorMode() { toggleTranslatorMode(); } // Alias for button
+
         function handleUserSubmit(){ 
             const input = document.getElementById('aiUserInput');
             const text = input.value.trim();
-            if(text) { addMessage("user", text); callGemini(text); input.value = ""; }
+            if(text) { 
+                addMessage("user", text); 
+                
+                if (isTranslatorMode) {
+                    // In translator mode, simply send the text, the system prompt handles the rest
+                    callGemini(text);
+                } else {
+                    callGemini(text);
+                }
+                input.value = ""; 
+            }
         }
         
         document.getElementById('aiUserInput').addEventListener('keypress', function (e) {
@@ -799,20 +996,29 @@
                 addMessage("ai", "Erreur: Clé API manquante.");
                 return;
             }
-            const day = voyageData.days[currentDayIndex];
             
-            let locationContext = `Planifié: ${day.location} (${day.country})`;
-            if(realUserLocation) {
-                locationContext += `. GPS Actuel: ${realUserLocation.lat}, ${realUserLocation.lng}`;
+            // Context Building
+            const plannedDay = voyageData.days[currentDayIndex];
+            let locationContext = `Planning: ${plannedDay.location} (${plannedDay.country})`;
+            
+            if (realUserLocation) {
+                locationContext = `📍 POSITION RÉELLE GPS: ${realUserLocation.lat}, ${realUserLocation.lng}. Ignorer le planning si la distance est grande.`;
             }
 
-            const systemContext = `Tu es un guide de voyage expert et romantique pour un couple en lune de miel. 
-            Localisation: ${locationContext}.
-            Date voyage: Jour ${day.id} (${day.date.toLocaleDateString()}).
-            Réponds de manière concise, utile et chaleureuse (max 2-3 phrases sauf si demandé autrement).
-            Si c'est une demande de traduction, donne la phrase en langue locale (${day.country === 'Japon' ? 'Japonais' : (day.country === 'Philippines' ? 'Tagalog/Visayan' : 'Anglais')}) et la phonétique.`;
+            const systemContext = `Tu es un guide de voyage expert et romantique.
+            CONTEXTE ACTUEL:
+            - ${locationContext}
+            - Date réelle: ${new Date().toLocaleString()}
+            - Mode Traducteur: ${isTranslatorMode ? "ACTIF (Traduis tout input utilisateur vers la langue locale du lieu actuel + phonétique)" : "INACTIF"}
             
-            const fullPrompt = prompt.replace('VilleActuelle', day.location).replace('PaysActuel', day.country);
+            RÈGLES:
+            1. Si le GPS est fourni, c'est la vérité absolue sur le lieu.
+            2. Le planning fourni est une référence pour répondre aux questions "quel est le programme ?".
+            3. Réponds de manière concise (max 3 phrases) sauf si demandé autrement.
+            4. Si en mode traducteur, ne discute pas, traduis juste.
+            `;
+
+            const fullPrompt = prompt.replace('VilleActuelle', plannedDay.location).replace('PaysActuel', plannedDay.country);
 
             addLoading();
 
@@ -834,6 +1040,28 @@
                 removeLoading();
                 addMessage("ai", "Erreur de connexion au service IA.");
                 console.error(error);
+            }
+        }
+
+        /* --- UTILS --- */
+        function setupSwipe() {
+            // Swipe for Planner
+            const container = document.getElementById('day-content');
+            let touchStartX = 0; let touchEndX = 0; const minSwipeDistance = 50;
+            container.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+            container.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(container, 'day'); }, {passive: true});
+            
+            // Swipe for Overview
+            const overviewContainer = document.getElementById('overview-container');
+            let touchStartOverview = 0;
+            overviewContainer.addEventListener('touchstart', e => { touchStartOverview = e.changedTouches[0].screenX; }, {passive: true});
+            // Use standard scroll - no custom JS needed as we use native scroll-snap
+
+            function handleSwipe(el, mode) {
+                const distance = touchEndX - touchStartX;
+                if (Math.abs(distance) < minSwipeDistance) return;
+                if (distance > 0) { if(mode==='day') changeDay(-1, 'left'); } 
+                else { if(mode==='day') changeDay(1, 'right'); }
             }
         }
 
