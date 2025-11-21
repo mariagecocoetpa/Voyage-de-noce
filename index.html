@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lune de Miel - Japon & Philippines</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
-    
+
     <!-- Leaflet CSS & FontAwesome -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -127,54 +127,71 @@
         .bg-ph { background: var(--philippines); }
         .bg-intl { background: #607d8b; }
         
-        /* OVERVIEW (VUE D'ENSEMBLE CARROUSEL) */
-        #overview { max-width: 100% !important; padding: 20px 0 !important; } /* Pleine largeur pour le carrousel */
+        /* OVERVIEW */
+        #overview { max-width: 100% !important; padding: 20px 0 !important; }
         #overview h2, .overview-controls, .landscape-hint { max-width: 800px; margin-left: auto; margin-right: auto; padding: 0 15px; }
         
         .overview-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .overview-grid { display: flex; overflow-x: auto; gap: 15px; padding: 10px 15px 30px 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
+        .overview-day { flex: 0 0 85%; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 5px solid var(--primary); display: flex; flex-direction: column; scroll-snap-align: center; min-height: 280px; }
         
-        .overview-grid { 
-            display: flex; 
-            overflow-x: auto; 
-            gap: 15px; 
-            padding: 10px 15px 30px 15px; /* Padding bottom pour scrollbar/ombre */
-            scroll-behavior: smooth; 
-            -webkit-overflow-scrolling: touch;
-            scroll-snap-type: x mandatory;
-        }
-        
-        .overview-day {
-            flex: 0 0 85%; /* Mobile: 1 jour presque plein */
-            background: white; border-radius: 12px; padding: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 5px solid var(--primary);
-            display: flex; flex-direction: column;
-            scroll-snap-align: center;
-            min-height: 250px;
-            transition: transform 0.2s;
-        }
-        
-        /* Landscape / Desktop: Voir 4 jours */
-        @media (min-width: 768px) or (orientation: landscape) {
-            .overview-day { flex: 0 0 28%; scroll-snap-align: start; }
-        }
-        @media (min-width: 1024px) {
-            .overview-day { flex: 0 0 23%; } /* ~4 jours */
-        }
+        @media (min-width: 768px) { .overview-day { flex: 0 0 28%; } }
+        @media (min-width: 1024px) { .overview-day { flex: 0 0 23%; } }
 
         .overview-date { font-weight: bold; color: var(--primary); margin-bottom: 5px; font-size: 1.1rem; }
         .overview-loc { font-size: 0.9rem; color: #666; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        
-        .overview-act-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; max-height: 200px; }
-        .overview-act-item { font-size: 0.85rem; margin-bottom: 6px; display: flex; gap: 6px; }
+        .overview-split-header { font-size: 0.75rem; text-transform: uppercase; color: #999; font-weight: bold; margin-top: 8px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+        .overview-act-list { list-style: none; padding: 0; margin: 0; }
+        .overview-act-item { font-size: 0.85rem; margin-bottom: 4px; display: flex; gap: 6px; line-height: 1.3; }
         .overview-act-item::before { content: '•'; color: var(--secondary); font-weight: bold; }
+        .overview-empty-slot { font-size: 0.75rem; color: #ccc; font-style: italic; margin-left: 10px; }
+        .landscape-hint { background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; display: none; }
+        @media (orientation: portrait) { .landscape-hint { display: block; } }
 
-        .landscape-hint { 
-            background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 8px; 
-            margin-bottom: 15px; text-align: center; font-size: 0.9rem; display: none;
-            border: 1px solid #bbdefb;
+        /* --- NOUVEAU DESIGN PAGE VOLS --- */
+        .flight-trip-card {
+            background: white; border-radius: 16px; overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 25px;
+        }
+        .flight-trip-header {
+            background: #f1f5f9; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .flight-trip-title { font-weight: bold; color: var(--secondary); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .flight-trip-date { font-size: 0.85rem; color: #64748b; background: white; padding: 4px 10px; border-radius: 20px; }
+        
+        .flight-segment {
+            display: flex; padding: 20px; position: relative;
+        }
+        .flight-segment:not(:last-child)::after {
+            content: ''; position: absolute; bottom: 0; left: 80px; right: 20px; border-bottom: 1px dashed #e2e8f0;
         }
         
-        @media (orientation: portrait) { .landscape-hint { display: block; } }
+        .flight-times-col {
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-width: 60px; text-align: right; padding-right: 15px; border-right: 2px solid var(--primary);
+            position: relative;
+        }
+        .flight-time { font-weight: 800; font-size: 1.1rem; color: #333; }
+        .flight-time-sub { font-size: 0.75rem; color: #999; }
+        
+        /* Points on the timeline */
+        .flight-times-col::before, .flight-times-col::after {
+            content: ''; position: absolute; right: -5px; width: 8px; height: 8px;
+            background: white; border: 2px solid var(--primary); border-radius: 50%;
+        }
+        .flight-times-col::before { top: 5px; }
+        .flight-times-col::after { bottom: 5px; }
+
+        .flight-info-col { padding-left: 15px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .flight-route { font-size: 1rem; font-weight: bold; margin-bottom: 5px; color: #1e293b; }
+        .flight-route span { color: var(--primary); margin: 0 5px; }
+        .flight-airline { font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 5px; }
+        .flight-badge { background: #e0f2f1; color: #00695c; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-left: auto; }
+        
+        .flight-stopover {
+            background: #fff3e0; color: #e65100; font-size: 0.8rem; padding: 8px; text-align: center; font-weight: bold;
+        }
 
         /* CHALLENGE CARD */
         .challenge-card {
@@ -186,133 +203,56 @@
         .challenge-body.open { display: block; }
         .challenge-card.completed { background: var(--success); }
         
-        /* CAMERA INPUT BUTTON */
-        .camera-btn-label {
-            display: block; width: 100%; padding: 15px;
-            background: white; color: #333; border-radius: 25px;
-            text-align: center; font-weight: bold; cursor: pointer;
-            margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .camera-btn-label:active { transform: scale(0.98); }
-        
-        .undo-btn {
-            background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5);
-            padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; margin-left: 10px;
-        }
-
+        /* CAMERA & UI */
+        .camera-btn-label { display: block; width: 100%; padding: 15px; background: white; color: #333; border-radius: 25px; text-align: center; font-weight: bold; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .undo-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5); padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; margin-left: 10px; }
         .timeline { padding: 10px 20px 25px; }
-        .activity {
-            border-left: 3px solid #eee; padding-left: 25px; margin-bottom: 25px; position: relative;
-        }
+        .activity { border-left: 3px solid #eee; padding-left: 25px; margin-bottom: 25px; position: relative; }
         .activity:last-child { margin-bottom: 0; }
-        .activity::before {
-            content: ''; width: 12px; height: 12px; background: var(--primary);
-            border-radius: 50%; position: absolute; left: -7px; top: 6px;
-            box-shadow: 0 0 0 4px white;
-        }
+        .activity::before { content: ''; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; position: absolute; left: -7px; top: 6px; box-shadow: 0 0 0 4px white; }
         
-        /* CONVERTER OPTIMIZED VERTICAL */
-        .converter-box {
-            background: white; padding: 30px 20px; border-radius: var(--radius);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08); text-align: center;
-            display: flex; flex-direction: column; gap: 15px;
-        }
-        .currency-row { 
-            display: flex; flex-direction: column; gap: 10px; width: 100%; 
-        }
-        @media (min-width: 480px) {
-            .currency-row { flex-direction: row; }
-        }
+        /* CONVERTER */
+        .converter-box { background: white; padding: 30px 20px; border-radius: var(--radius); box-shadow: 0 8px 25px rgba(0,0,0,0.08); text-align: center; display: flex; flex-direction: column; gap: 15px; }
+        .currency-row { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        @media (min-width: 480px) { .currency-row { flex-direction: row; } }
         .currency-select { padding: 16px; border: 1px solid #eee; border-radius: 12px; background: #fcfcfc; font-weight: bold; width: 100%; }
         .currency-input { padding: 16px; border: 1px solid #eee; border-radius: 12px; font-size: 1.4rem; font-weight: 500; width: 100%; text-align: center; }
-        .btn-update {
-            background: var(--secondary); color: white; border: none; 
-            padding: 15px; border-radius: 12px; cursor: pointer; width: 100%;
-            font-weight: bold; font-size: 1rem; display: flex; 
-            align-items: center; justify-content: center; gap: 10px; 
-            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3); margin-top: 10px;
-        }
+        .btn-update { background: var(--secondary); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
 
         /* AI MODAL */
-        .ai-fab {
-            position: fixed; bottom: 25px; right: 25px;
-            width: 65px; height: 65px; border-radius: 50%;
-            background: linear-gradient(135deg, #ff4081 0%, #6200ea 100%);
-            color: white; border: none; font-size: 28px;
-            box-shadow: 0 6px 20px rgba(98, 0, 234, 0.4);
-            z-index: 1600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: transform 0.2s;
-        }
-        .ai-fab:active { transform: scale(0.9); }
-
-        .ai-modal {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: white; border-radius: 25px 25px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-            z-index: 1601; padding: 25px 20px; display: none; flex-direction: column;
-            max-height: 85vh; border-top: 1px solid rgba(0,0,0,0.05);
-            animation: slideUp 0.3s ease-out;
-        }
+        .ai-fab { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 50%; background: linear-gradient(135deg, #ff4081 0%, #6200ea 100%); color: white; border: none; font-size: 28px; box-shadow: 0 6px 20px rgba(98, 0, 234, 0.4); z-index: 1600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+        .ai-modal { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-radius: 25px 25px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); z-index: 1601; padding: 25px 20px; display: none; flex-direction: column; max-height: 85vh; animation: slideUp 0.3s ease-out; }
         .ai-modal.active { display: flex; }
         .ai-chat-box { flex:1; min-height: 200px; overflow-y: auto; background: #f5f7fa; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-        
         .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .ai-title { font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        
-        /* AI Context Badge */
         .ai-badge { font-size: 0.75rem; padding: 4px 8px; background: #eee; border-radius: 10px; color: #555; }
         .ai-badge.active { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-
         .ai-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .ai-btn {
-            padding: 15px 10px; border: 1px solid #eee; border-radius: 12px;
-            background: #fff; cursor: pointer; font-size: 0.9rem;
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
+        .ai-btn { padding: 15px 10px; border: 1px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .chat-msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 16px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
         .chat-msg.user { background: var(--secondary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .chat-msg.ai { background: white; border: 1px solid #e0e0e0; align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        /* ANIMATIONS */
+        /* ANIMATIONS & UTILS */
         @keyframes slideInRight { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideInLeft { from { transform: translateX(-30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .slide-in-right { animation: slideInRight 0.3s forwards; }
         .slide-in-left { animation: slideInLeft 0.3s forwards; }
-
-        /* UTILS */
         input, select, textarea { font-size: 16px !important; }
         .map-link { text-decoration: none; color: inherit; }
         .hotel-card { background: #fffde7; margin: 20px; padding: 20px; border-radius: 12px; border-left: 6px solid #fbc02d; }
         .hotel-badge { display: inline-block; background: white; padding: 4px 10px; border-radius: 20px; margin-right: 6px; margin-bottom: 6px; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.05); }
         #map-container { height: 65vh; border-radius: var(--radius); margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        /* Map Marker */
         .custom-div-icon { background: transparent; border: none; }
         .marker-pin { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; position: absolute; transform: rotate(-45deg); left: 50%; top: 50%; margin: -15px 0 0 -15px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
         .marker-pin::after { content: ''; width: 20px; height: 20px; margin: 5px 0 0 5px; background: #fff; position: absolute; border-radius: 50%; }
         .marker-pin i { transform: rotate(45deg); z-index: 10; font-size: 14px; color: #333; }
-        
-        /* Pulsing User Location Marker */
-        .user-pin {
-            width: 20px; height: 20px; border-radius: 50%; background: #2196f3;
-            border: 3px solid white; box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.3);
-            position: relative;
-        }
-        .user-pin::after {
-            content: ''; width: 100%; height: 100%; border-radius: 50%; background: rgba(33, 150, 243, 0.5);
-            position: absolute; top: 0; left: 0; animation: pulse 2s infinite; z-index: -1;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.8; }
-            70% { transform: scale(2.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 0; }
-        }
-
+        .user-pin { width: 20px; height: 20px; border-radius: 50%; background: #2196f3; border: 3px solid white; box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.3); position: relative; }
+        .user-pin::after { content: ''; width: 100%; height: 100%; border-radius: 50%; background: rgba(33, 150, 243, 0.5); position: absolute; top: 0; left: 0; animation: pulse 2s infinite; z-index: -1; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 70% { transform: scale(2.5); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
         .typing-dots::after { content: ' . . .'; animation: dots 1.5s infinite; }
         @keyframes dots { 0% { content: ' .'; } 33% { content: ' . .'; } 66% { content: ' . . .'; } }
     </style>
@@ -347,6 +287,7 @@
             <button onclick="toggleSidebar()" style="position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.8rem;padding:10px;color:#666;">&times;</button>
             <a href="#" class="nav-link" onclick="navigate('planner')"><i class="fas fa-calendar-alt"></i> Planning</a>
             <a href="#" class="nav-link" onclick="navigate('overview')"><i class="fas fa-th-large"></i> Vue Globale</a>
+            <a href="#" class="nav-link" onclick="navigate('flights')"><i class="fas fa-plane"></i> Vols</a>
             <a href="#" class="nav-link" onclick="navigate('map')"><i class="fas fa-globe-asia"></i> Carte</a>
             <a href="#" class="nav-link" onclick="navigate('hotels')"><i class="fas fa-hotel"></i> Hébergements</a>
             <a href="#" class="nav-link" onclick="navigate('converter')"><i class="fas fa-exchange-alt"></i> Convertisseur</a>
@@ -379,7 +320,15 @@
             </div>
         </section>
 
-        <!-- 3. CARTE -->
+        <!-- 3. VOLS -->
+        <section id="flights" class="section">
+            <h2 style="margin-bottom:15px;">✈️ Vos Vols</h2>
+            <div id="flights-container">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+        <!-- 4. CARTE -->
         <section id="map" class="section">
             <h2 style="margin-bottom:15px;">🗺️ Carte du Voyage</h2>
             <div class="map-legend" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:15px; font-size:0.85rem;">
@@ -390,13 +339,13 @@
             <div id="map-container"></div>
         </section>
         
-        <!-- 4. HÔTELS -->
+        <!-- 5. HÔTELS -->
         <section id="hotels" class="section">
             <h2 style="margin-bottom:15px;">🏨 Vos Hébergements</h2>
             <div id="hotels-list"></div>
         </section>
 
-        <!-- 5. CONVERTISSEUR -->
+        <!-- 6. CONVERTISSEUR -->
         <section id="converter" class="section">
             <h2 style="margin-bottom:15px;">💱 Convertisseur</h2>
             <div class="converter-box">
@@ -524,7 +473,8 @@
             setupSwipe();
             initGeo(); 
             updateAIContext();
-            renderOverview(); // Init overview
+            renderOverview(); 
+            renderFlights(); 
         });
 
         /* --- GEOLOCATION --- */
@@ -534,7 +484,6 @@
                     (pos) => {
                         realUserLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                         updateAIContext();
-                        // If map is initialized, update/add user marker
                         if (map) updateUserMarker();
                     },
                     (err) => console.log("GPS Error", err),
@@ -573,7 +522,7 @@
             
             if(id === 'map' && map) {
                 setTimeout(() => map.invalidateSize(), 200);
-                updateUserMarker(); // Ensure user marker is shown if location available
+                updateUserMarker();
             }
             if(id === 'converter') updateRates();
         }
@@ -588,29 +537,151 @@
         function renderOverview() {
             const container = document.getElementById('overview-container');
             
-            // Render ALL days in one go
-            container.innerHTML = voyageData.days.map(d => `
+            container.innerHTML = voyageData.days.map(d => {
+                const morningActs = d.activities.filter(a => parseInt(a.time.split(':')[0]) < 12);
+                const afternoonActs = d.activities.filter(a => parseInt(a.time.split(':')[0]) >= 12);
+
+                return `
                 <div class="overview-day" onclick="selectDay(${d.id-1}); navigate('planner')">
                     <div class="overview-date">${d.date.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'})}</div>
                     <div class="overview-loc"><i class="fas fa-map-pin"></i> ${d.location}</div>
-                    <div class="overview-act-list">
-                        ${d.activities.map(a => `
-                            <div class="overview-act-item">${a.title}</div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
+                    
+                    <div class="overview-split-header"><i class="fas fa-sun" style="color:#fbc02d;"></i> Matin</div>
+                    <ul class="overview-act-list">
+                        ${morningActs.length > 0 ? morningActs.map(a => `<li class="overview-act-item">${a.time} - ${a.title}</li>`).join('') : '<li class="overview-empty-slot">Repos / Libre</li>'}
+                    </ul>
+
+                    <div class="overview-split-header"><i class="fas fa-moon" style="color:#5c6bc0;"></i> Après-midi</div>
+                    <ul class="overview-act-list">
+                        ${afternoonActs.length > 0 ? afternoonActs.map(a => `<li class="overview-act-item">${a.time} - ${a.title}</li>`).join('') : '<li class="overview-empty-slot">Repos / Libre</li>'}
+                    </ul>
+                </div>`;
+            }).join('');
         }
 
         function scrollOverview(direction) {
             const container = document.getElementById('overview-container');
-            const scrollAmount = container.clientWidth * 0.85; // Scroll by roughly one screen width
+            const scrollAmount = container.clientWidth * 0.85; 
             
             if(direction === 'left') {
                 container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
             } else {
                 container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
             }
+        }
+
+        /* --- FLIGHTS LOGIC (NOUVEAU) --- */
+        function renderFlights() {
+            const flightItinerary = [
+                {
+                    title: "Aller : France → Japon",
+                    date: "20 Février 2026",
+                    flights: [
+                        {
+                            depCode: "CDG", depCity: "Paris", depTime: "18:50",
+                            arrCode: "IST", arrCity: "Istanbul", arrTime: "23:30",
+                            flightNum: "TK1828", airline: "Turkish Airlines"
+                        },
+                        {
+                            depCode: "IST", depCity: "Istanbul", depTime: "02:30",
+                            arrCode: "HND", arrCity: "Tokyo", arrTime: "19:45",
+                            flightNum: "TK198", airline: "Turkish Airlines", nextDay: true
+                        }
+                    ]
+                },
+                {
+                    title: "Transfert : Tokyo → Hokkaido",
+                    date: "25 Février 2026",
+                    flights: [
+                        {
+                            depCode: "HND", depCity: "Tokyo", depTime: "11:10",
+                            arrCode: "AKJ", arrCity: "Asahikawa", arrTime: "12:50",
+                            flightNum: "Vol Domestique", airline: "JAL / ANA"
+                        }
+                    ]
+                },
+                {
+                    title: "Transfert : Hokkaido → Kansai",
+                    date: "02 Mars 2026",
+                    flights: [
+                        {
+                            depCode: "CTS", depCity: "Sapporo", depTime: "14:00",
+                            arrCode: "ITM", arrCity: "Osaka", arrTime: "16:05",
+                            flightNum: "Vol Domestique", airline: "JAL / ANA"
+                        }
+                    ]
+                },
+                {
+                    title: "Transit : Japon → Philippines",
+                    date: "06 Mars 2026",
+                    flights: [
+                        {
+                            depCode: "KIX", depCity: "Osaka", depTime: "19:35",
+                            arrCode: "MNL", arrCity: "Manille", arrTime: "23:15",
+                            flightNum: "PR411", airline: "Philippine Airlines"
+                        },
+                        {
+                            depCode: "MNL", depCity: "Manille", depTime: "05:20",
+                            arrCode: "TAG", arrCity: "Panglao", arrTime: "06:55",
+                            flightNum: "PR2773", airline: "PAL Express", nextDay: true
+                        }
+                    ]
+                },
+                {
+                    title: "Retour : Philippines → France",
+                    date: "13 Mars 2026",
+                    flights: [
+                        {
+                            depCode: "TAG", depCity: "Panglao", depTime: "18:50",
+                            arrCode: "MNL", arrCity: "Manille", arrTime: "20:25",
+                            flightNum: "PR2778", airline: "PAL Express"
+                        },
+                        {
+                            depCode: "MNL", depCity: "Manille", depTime: "23:30",
+                            arrCode: "DXB", arrCity: "Dubai", arrTime: "04:45",
+                            flightNum: "EK335", airline: "Emirates", nextDay: true
+                        },
+                        {
+                            depCode: "DXB", depCity: "Dubai", depTime: "07:50",
+                            arrCode: "CDG", arrCity: "Paris", arrTime: "12:25",
+                            flightNum: "EK073", airline: "Emirates"
+                        }
+                    ]
+                }
+            ];
+
+            const container = document.getElementById('flights-container');
+            
+            container.innerHTML = flightItinerary.map(trip => `
+                <div class="flight-trip-card">
+                    <div class="flight-trip-header">
+                        <div class="flight-trip-title"><i class="fas fa-plane-departure"></i> ${trip.title}</div>
+                        <div class="flight-trip-date">${trip.date}</div>
+                    </div>
+                    ${trip.flights.map(segment => `
+                        <div class="flight-segment">
+                            <div class="flight-times-col">
+                                <div class="flight-time">${segment.depTime}</div>
+                                <div class="flight-time-sub">${segment.depCode}</div>
+                                
+                                <div style="flex:1; min-height:20px; border-right:2px dashed #ccc; margin-right:-2px;"></div>
+                                
+                                <div class="flight-time">${segment.arrTime} ${segment.nextDay ? '<sup style="color:#e91e63; font-size:0.6rem;">+1</sup>' : ''}</div>
+                                <div class="flight-time-sub">${segment.arrCode}</div>
+                            </div>
+                            <div class="flight-info-col">
+                                <div class="flight-route">
+                                    <strong>${segment.depCity}</strong> <span>✈</span> <strong>${segment.arrCity}</strong>
+                                </div>
+                                <div class="flight-airline">
+                                    <i class="fas fa-ticket-alt"></i> ${segment.airline}
+                                    <span class="flight-badge">${segment.flightNum}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
         }
 
         /* --- PLANNING --- */
@@ -768,7 +839,6 @@
             L.control.zoom({position: 'bottomright'}).addTo(map);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: ''}).addTo(map);
             
-            // Hôtels
             voyageData.hotels.forEach(h => {
                 if(h.coords) {
                     const icon = L.divIcon({
@@ -780,7 +850,6 @@
                 }
             });
 
-            // Activités
             voyageData.days.forEach(d => {
                 d.activities.forEach(act => {
                     if(act.coords) {
@@ -804,18 +873,16 @@
                 }
             });
             
-            updateUserMarker(); // Check if we can add user marker immediately
+            updateUserMarker();
         }
         
         function updateUserMarker() {
             if (!map) return;
             
-            // Check date conditions: only show if within trip range
             const now = new Date();
             const tripStart = voyageData.days[0].date;
             const tripEnd = voyageData.days[voyageData.days.length - 1].date;
             
-            // Adding a small buffer (end of the last day)
             const tripEndBuffer = new Date(tripEnd);
             tripEndBuffer.setDate(tripEndBuffer.getDate() + 1);
 
@@ -901,9 +968,7 @@
         function toggleAIModal() { document.getElementById('aiModal').classList.toggle('active'); }
         
         function updateAIContext() {
-            // Determine context: Real Location (GPS) > Real Date (if during trip) > Planned Day
             const now = new Date();
-            // Check if today is within trip range
             const tripStart = voyageData.days[0].date;
             const tripEnd = voyageData.days[voyageData.days.length - 1].date;
             const isDuringTrip = now >= tripStart && now <= tripEnd;
@@ -916,7 +981,6 @@
                 badgeText = "📍 GPS Actif";
                 badgeClass = "active";
             } else if (isDuringTrip) {
-                // Find the actual day object
                 const todayObj = voyageData.days.find(d => d.date.toDateString() === now.toDateString());
                 if (todayObj) {
                     badgeText = "📅 En direct";
@@ -945,7 +1009,7 @@
         }
 
         function askGemini(p){ addMessage("user", p); callGemini(p); }
-        function activateTranslatorMode() { toggleTranslatorMode(); } // Alias for button
+        function activateTranslatorMode() { toggleTranslatorMode(); }
 
         function handleUserSubmit(){ 
             const input = document.getElementById('aiUserInput');
@@ -954,7 +1018,6 @@
                 addMessage("user", text); 
                 
                 if (isTranslatorMode) {
-                    // In translator mode, simply send the text, the system prompt handles the rest
                     callGemini(text);
                 } else {
                     callGemini(text);
@@ -997,7 +1060,6 @@
                 return;
             }
             
-            // Context Building
             const plannedDay = voyageData.days[currentDayIndex];
             let locationContext = `Planning: ${plannedDay.location} (${plannedDay.country})`;
             
@@ -1045,17 +1107,14 @@
 
         /* --- UTILS --- */
         function setupSwipe() {
-            // Swipe for Planner
             const container = document.getElementById('day-content');
             let touchStartX = 0; let touchEndX = 0; const minSwipeDistance = 50;
             container.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
             container.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(container, 'day'); }, {passive: true});
             
-            // Swipe for Overview
             const overviewContainer = document.getElementById('overview-container');
             let touchStartOverview = 0;
             overviewContainer.addEventListener('touchstart', e => { touchStartOverview = e.changedTouches[0].screenX; }, {passive: true});
-            // Use standard scroll - no custom JS needed as we use native scroll-snap
 
             function handleSwipe(el, mode) {
                 const distance = touchEndX - touchStartX;
